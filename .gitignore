@@ -1,0 +1,95 @@
+# directories
+artifacts/
+mitch_sandbox/
+models/
+checkpoints/
+runs/
+mlruns/
+
+# data
+data/chord
+data/mirex
+data/mpd
+data/msdsl
+data/spec_metadata
+data/spotify_genre
+data/trimmed
+
+# artifacts
+*.wav
+*.mp3
+*.png
+*.npy
+
+# from octocat .gitignore
+######################
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+
+######################
+# Python bytecode
+######################
+__pycache__/
+*.py[cod]
+*$py.class
+
+#######################
+# C extensions
+#######################
+*.so
+
+#######################
+# Distribution / packaging
+#######################
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+#######################
+# Virtual environments
+#######################
+.env
+.venv
+env/
+venv/
+ENV/
+
+#######################
+# IDEs / Editors
+#######################
+.vscode/
+.idea/
+*.swp
+*.swo
+
+#######################
+# Jupyter
+#######################
+.ipynb_checkpoints/
+
+######################
+# Logs
+######################
+*.log
+
+######################
+# Coverage / testing
+######################
+.coverage
+htmlcov/
+.pytest_cache/

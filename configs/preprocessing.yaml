@@ -1,0 +1,38 @@
+# configs/preprocessing.yaml
+
+audio:
+  sample_rate: 22050
+  duration: 10.0        # important
+  offset: 0.0
+
+mel_spectrogram:
+  n_fft: 4096           # improves image resolution
+  hop_length: 256       # improves image resolution
+  n_mels: 256
+  fmin: 20
+  fmax: 11025           # half of sr
+  power: 2.0            # default
+
+normalization:
+  method: minmax        # options: minmax, none
+  clip: True
+
+image_output:
+  format: png
+  bit_depth: 8          
+  dpi: 100
+  cmap: magma
+  vmin: 0               # black "-80dB" IMPORTANT
+  vmax: 1               # white "0dB" IMPORTANT
+
+raw_output:
+  format: npy
+  dtype: float32        # unused
+
+reconstruction:
+  n_iter: 512
+  top_db: 80.0
+  floor_db: -80.0
+  invert: False
+  crop: null            # optional to remove borders: tuple[top, bottom, left, right]
+  target_seconds: 10.0  # force exact duration (seconds) by crop/pad after reconstruction

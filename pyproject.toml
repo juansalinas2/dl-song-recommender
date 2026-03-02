@@ -1,0 +1,12 @@
+[project]
+name = "song-recommender"
+version = "0.1.0"
+description = "Deep learning song recommendation system"
+authors = [{name = "Nick Geis, Mitch Hamidi-Ismert, Juan Salinas"}]
+requires-python = ">=3.9"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
