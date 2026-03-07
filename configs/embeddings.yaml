@@ -1,0 +1,9 @@
+# configs/embeddings.yaml
+
+baseline_embedding:
+  image_size: 32        # small for baseline speed; increase for higher fidelity
+  max_songs: null       # set a number for quick tests
+  image_flag: True
+  topk: 10
+  log_every: 200
+
