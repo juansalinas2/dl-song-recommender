@@ -16,3 +16,4 @@ scikit_learn
 torch
 soundfile
 scipy
+opencv-python
