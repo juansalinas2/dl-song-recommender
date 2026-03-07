@@ -20,6 +20,7 @@ data/trimmed
 *.mp3
 *.png
 *.npy
+*.npz
 
 # from octocat .gitignore
 ######################
