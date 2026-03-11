@@ -1,0 +1,4 @@
+# configs/dataset.yaml
+
+tag_cleaning:
+  min_tag_freq: 5
