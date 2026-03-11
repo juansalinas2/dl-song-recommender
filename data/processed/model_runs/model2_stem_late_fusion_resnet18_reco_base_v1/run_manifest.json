@@ -1,5 +1,5 @@
 {
-  "saved_at": "2026-03-10T14:25:11",
+  "saved_at": "2026-03-11T08:22:18",
   "experiment_name": "resnet18_reco_base_v1",
   "reference_note": "Based on semantic_balance_v1 settings from 04_model2_stem_late_fusion.ipynb",
   "run_label": "model2_stem_late_fusion_resnet18_reco_base_v1",
@@ -8,11 +8,11 @@
   "metrics": [
     {
       "metric": "artist_hit@10",
-      "value": 0.154
+      "value": 0.202
     },
     {
       "metric": "genre_hit@10",
-      "value": 0.97
+      "value": 0.974
     }
   ]
 }
