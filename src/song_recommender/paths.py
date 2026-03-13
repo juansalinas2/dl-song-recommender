@@ -33,6 +33,7 @@ WORD2VEC_TAG_MODEL = TAG_EMBEDDING_DIR / 'word2vec_tags.model'
 TAG_KEYS = TAG_EMBEDDING_DIR / "tag_keys.json"
 TAG_VECTORS = TAG_EMBEDDING_DIR / "tag_vectors.npy"
 TAG_CLUSTER_MAP = TAG_CLUSTER_DIR / 'tag_cluster_map.json'
+CLUSTER_TAGS = TAG_CLUSTER_DIR / 'cluster_tags.json'
 
 ## baseline
 
