@@ -42,3 +42,7 @@ BASELINE_DIR = MODELS_DIR / 'baselines'
 TAG_CENTROID_BASELINE = BASELINE_DIR / 'tag_centroid_baseline.npy'
 SPEC_SIM_BASELINE = BASELINE_DIR / 'spec_sim_baseline.npz'
 RANDOM_RETRIEVAL_BASELINE = BASELINE_DIR / 'random_retrieval_baseline.npy'
+
+## Resnet Models
+
+RESNET_MODELS_DIR = DATA_DIR / 'processed/model_runs'
