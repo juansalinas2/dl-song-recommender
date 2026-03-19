@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: dl-song-recommender-web
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: PYTHONPATH=src uvicorn song_recommender.web.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: false

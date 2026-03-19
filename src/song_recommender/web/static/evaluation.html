@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Song Recommendation Evaluation</title>
+    <style>
+      :root {
+        --bg: #d8e5e7;
+        --bg-alt: #edf4f5;
+        --paper: rgba(250, 252, 252, 0.94);
+        --paper-strong: rgba(244, 249, 249, 0.98);
+        --model-paper: rgba(189, 209, 214, 0.98);
+        --model-paper-strong: rgba(175, 197, 203, 0.99);
+        --text: #18313a;
+        --muted: #56727a;
+        --line: rgba(24, 49, 58, 0.14);
+        --model-line: rgba(24, 49, 58, 0.2);
+        --accent: #2f6f7e;
+        --accent-strong: #1e5967;
+        --good: #2f7d4b;
+        --neutral: #916d21;
+        --bad: #a54a4a;
+        --skip: #6c7b80;
+        --shadow: 0 22px 48px rgba(58, 84, 92, 0.12);
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top right, rgba(47, 111, 126, 0.10), transparent 28%),
+          linear-gradient(180deg, var(--bg-alt) 0%, var(--bg) 100%);
+      }
+      main {
+        width: min(1180px, calc(100% - 36px));
+        margin: 0 auto;
+        padding: 34px 0 64px;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+      .title {
+        margin: 0;
+        font-size: clamp(2.2rem, 5vw, 4rem);
+        line-height: 0.95;
+      }
+      .subtitle {
+        margin: 10px 0 0;
+        max-width: 58ch;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+      .nav {
+        display: inline-flex;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px;
+        background: rgba(255, 255, 255, 0.55);
+        box-shadow: var(--shadow);
+      }
+      .nav a {
+        text-decoration: none;
+        color: var(--muted);
+        padding: 10px 16px;
+        border-radius: 999px;
+      }
+      .nav a.active {
+        color: #fff;
+        background: var(--accent);
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: start;
+        margin-bottom: 20px;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-self: start;
+      }
+      button {
+        font: inherit;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        cursor: pointer;
+        max-width: 100%;
+      }
+      .primary-button {
+        background: var(--accent);
+        color: #fff;
+        padding: 12px 16px;
+      }
+      .primary-button:hover {
+        background: var(--accent-strong);
+      }
+      .ghost-button {
+        background: rgba(255, 255, 255, 0.72);
+        color: var(--text);
+        padding: 12px 16px;
+      }
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .summary-card,
+      .model-card,
+      .recommendation-card {
+        background: linear-gradient(180deg, var(--paper) 0%, var(--paper-strong) 100%);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+        min-width: 0;
+      }
+      .topbar > *,
+      .hero > *,
+      .summary > *,
+      .models > *,
+      .model-head > *,
+      .recommendation-grid > *,
+      .rating-group > *,
+      .query-card,
+      .prompt-card {
+        min-width: 0;
+      }
+      .summary-card,
+      .model-card,
+      .recommendation-card,
+      .query-card,
+      .prompt-card,
+      .subtitle,
+      .status,
+      .score-map,
+      .track-title,
+      .track-meta,
+      .model-title,
+      .saved-note,
+      .survey-hint,
+      .summary-value,
+      h1,
+      h2,
+      h3,
+      p,
+      span,
+      strong,
+      a {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      .summary-card {
+        padding: 16px 18px;
+      }
+      .summary-card.wide {
+        grid-column: span 2;
+      }
+      .summary-card.tall {
+        grid-column: span 2;
+      }
+      .summary-label {
+        font-size: 0.76rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .summary-value {
+        margin-top: 8px;
+        font-size: 1.5rem;
+      }
+      .progress-shell {
+        margin-top: 12px;
+      }
+      .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 0.88rem;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .progress-track {
+        width: 100%;
+        height: 12px;
+        border-radius: 999px;
+        background: rgba(24, 49, 58, 0.08);
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--accent) 0%, #5f9ca9 100%);
+        transition: width 180ms ease;
+      }
+      .status {
+        min-height: 24px;
+        margin: 0 0 18px;
+        color: var(--muted);
+      }
+      .score-map {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+      }
+      .score-row strong {
+        color: var(--text);
+      }
+      .models {
+        display: grid;
+        gap: 18px;
+      }
+      .model-card {
+        padding: 20px;
+        background: linear-gradient(180deg, var(--model-paper) 0%, var(--model-paper-strong) 100%);
+        border-color: var(--model-line);
+        box-shadow: 0 24px 50px rgba(58, 84, 92, 0.18);
+      }
+      .model-card.complete {
+        border-color: rgba(47, 125, 75, 0.4);
+      }
+      .model-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: start;
+        margin-bottom: 16px;
+      }
+      .model-status {
+        min-width: 88px;
+        text-align: right;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .model-title {
+        margin: 0;
+        font-size: 1.35rem;
+      }
+      .chip-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .chip {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        color: var(--accent-strong);
+        background: rgba(47, 111, 126, 0.11);
+      }
+      .query-card {
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: rgba(241, 247, 247, 0.96);
+        border: 1px solid rgba(24, 49, 58, 0.14);
+        margin-bottom: 16px;
+      }
+      .query-label {
+        font-size: 0.78rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .recommendation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 14px;
+      }
+      .recommendation-card {
+        padding: 16px;
+        border: 1px solid rgba(24, 49, 58, 0.1);
+        background: rgba(247, 250, 250, 0.92);
+      }
+      .recommendation-card.is-rated {
+        border-color: rgba(24, 49, 58, 0.2);
+      }
+      .rank {
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+      .track-title {
+        margin: 8px 0 4px;
+        font-size: 1.08rem;
+      }
+      .track-meta {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .rating-group {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .rating-button {
+        background: #fff;
+        padding: 10px 8px;
+        color: var(--text);
+        text-align: center;
+        font-size: 0.9rem;
+      }
+      .rating-button.active-good {
+        color: #fff;
+        background: var(--good);
+        border-color: rgba(47, 125, 75, 0.4);
+      }
+      .rating-button.active-neutral {
+        color: #fff;
+        background: var(--neutral);
+        border-color: rgba(145, 109, 33, 0.4);
+      }
+      .rating-button.active-bad {
+        color: #fff;
+        background: var(--bad);
+        border-color: rgba(165, 74, 74, 0.4);
+      }
+      .rating-button.active-skip {
+        color: #fff;
+        background: var(--skip);
+        border-color: rgba(108, 123, 128, 0.4);
+      }
+      .saved-note {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+      .survey-hint {
+        margin-top: 6px;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      .prompt-card {
+        margin-bottom: 18px;
+        padding: 16px 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(47, 111, 126, 0.12);
+        background: rgba(255, 255, 255, 0.58);
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .track-link {
+        display: inline-block;
+        margin-top: 10px;
+        color: var(--accent-strong);
+        text-decoration: none;
+      }
+      iframe {
+        width: 100%;
+        max-width: 100%;
+        height: 152px;
+        border: 0;
+        border-radius: 14px;
+        margin-top: 12px;
+        display: block;
+      }
+      @media (max-width: 900px) {
+        .topbar,
+        .hero {
+          grid-template-columns: 1fr;
+          display: grid;
+        }
+        .summary-card.wide,
+        .summary-card.tall {
+          grid-column: span 1;
+        }
+        .rating-group {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <div>
+          <h1 class="title">Evaluation Survey</h1>
+          <p class="subtitle">
+            Listen to one query song, then rate how well each suggested song matches it.
+          </p>
+        </div>
+        <nav class="nav" aria-label="Mode navigation">
+          <a href="/">Demo</a>
+          <a class="active" href="/evaluation">Evaluation</a>
+        </nav>
+      </div>
+
+      <section class="hero">
+        <div class="summary" id="summary">
+          <div class="summary-card wide">
+            <div class="summary-label">Overall Progress</div>
+            <div class="progress-shell">
+              <div class="progress-meta">
+                <span id="progress-copy">No active batch</span>
+                <span id="progress-percent">0%</span>
+              </div>
+              <div class="progress-track" aria-hidden="true">
+                <div id="progress-fill" class="progress-fill"></div>
+              </div>
+            </div>
+          </div>
+          <div class="summary-card tall">
+            <div class="summary-label">Scoring Map</div>
+            <div class="score-map">
+              <div class="score-row"><strong>Good = +1</strong> if the song feels like a strong match for the query.</div>
+              <div class="score-row"><strong>Neutral = 0</strong> if the match is only okay or uncertain.</div>
+              <div class="score-row"><strong>Bad = -1</strong> if it does not feel like a good match.</div>
+              <div class="score-row"><strong>Skip = excluded</strong> if you cannot judge the song fairly.</div>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Session</div>
+            <div class="summary-value" id="session-id">Not started</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Rated</div>
+            <div class="summary-value" id="progress-count">0 / 0</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Models</div>
+            <div class="summary-value" id="model-count">0</div>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button id="new-batch" class="primary-button" type="button">Start random batch</button>
+          <button id="reset-batch" class="ghost-button" type="button">Load another batch</button>
+        </div>
+      </section>
+
+      <div class="prompt-card">
+        Listen to the query song first. Then rate each suggested song:
+        <strong>Good</strong> if it feels like a strong match,
+        <strong>Neutral</strong> if it is only an okay match,
+        <strong>Bad</strong> if it feels like a poor match,
+        and <strong>Skip</strong> if you cannot judge it fairly.
+      </div>
+      <p id="status" class="status">Start a batch to load a fresh evaluation survey.</p>
+      <section id="models" class="models"></section>
+    </main>
+
+    <script>
+      const modelsRoot = document.getElementById("models");
+      const statusRoot = document.getElementById("status");
+      const sessionIdRoot = document.getElementById("session-id");
+      const progressCountRoot = document.getElementById("progress-count");
+      const progressCopyRoot = document.getElementById("progress-copy");
+      const progressPercentRoot = document.getElementById("progress-percent");
+      const progressFillRoot = document.getElementById("progress-fill");
+      const modelCountRoot = document.getElementById("model-count");
+      const newBatchButton = document.getElementById("new-batch");
+      const resetBatchButton = document.getElementById("reset-batch");
+
+      let currentSession = null;
+      let ratings = new Map();
+
+      async function requestJson(url, options = {}) {
+        const response = await fetch(url, {
+          headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+          ...options,
+        });
+        if (!response.ok) {
+          let detail = `Request failed: ${response.status}`;
+          try {
+            const payload = await response.json();
+            if (payload && typeof payload.detail === "string" && payload.detail) {
+              detail = payload.detail;
+            }
+          } catch (_error) {
+            // Keep the HTTP status fallback.
+          }
+          throw new Error(detail);
+        }
+        return response.json();
+      }
+
+      function responseKey(modelId, spotifyId) {
+        return `${modelId}::${spotifyId}`;
+      }
+
+      function splitLabel(splitName) {
+        if (splitName === "test") return "Held-out test query";
+        if (splitName === "val") return "Held-out validation query";
+        return "Held-out query";
+      }
+
+      function modelRatedCount(modelId) {
+        let count = 0;
+        for (const key of ratings.keys()) {
+          if (key.startsWith(`${modelId}::`)) count += 1;
+        }
+        return count;
+      }
+
+      function updateModelCompletion() {
+        if (!currentSession) return;
+        for (const entry of currentSession.models) {
+          const count = modelRatedCount(entry.model.model_id);
+          const root = modelsRoot.querySelector(`[data-model-root="${entry.model.model_id}"]`);
+          if (!root) continue;
+          root.classList.toggle("complete", count === entry.recommendations.length);
+          const label = root.querySelector(".model-status");
+          if (label) {
+            label.textContent = count === entry.recommendations.length
+              ? "Complete"
+              : `${count} / ${entry.recommendations.length} rated`;
+          }
+        }
+      }
+
+      function updateProgress() {
+        if (!currentSession) {
+          progressCountRoot.textContent = "0 / 0";
+          progressCopyRoot.textContent = "No active batch";
+          progressPercentRoot.textContent = "0%";
+          progressFillRoot.style.width = "0%";
+          return;
+        }
+        const total = currentSession.total_items;
+        const rated = ratings.size;
+        const percent = total ? Math.round((rated / total) * 100) : 0;
+        progressCountRoot.textContent = `${rated} / ${total}`;
+        progressCopyRoot.textContent = rated === total ? "All recommendations rated" : `${total - rated} ratings remaining`;
+        progressPercentRoot.textContent = `${percent}%`;
+        progressFillRoot.style.width = `${percent}%`;
+        updateModelCompletion();
+        if (ratings.size === currentSession.total_items) {
+          statusRoot.textContent = "Survey complete. Responses are saved locally. Load another batch if you want a fresh set.";
+        }
+      }
+
+      function renderModels() {
+        if (!currentSession || !currentSession.models.length) {
+          modelsRoot.innerHTML = "";
+          modelCountRoot.textContent = "0";
+          return;
+        }
+        modelCountRoot.textContent = String(currentSession.models.length);
+        modelsRoot.innerHTML = currentSession.models.map((entry) => `
+          <section class="model-card" data-model-root="${entry.model.model_id}">
+            <div class="model-head">
+              <div>
+                <h2 class="model-title">${entry.blind_label}</h2>
+                <div class="chip-row">
+                  <span class="chip">${splitLabel(entry.query_split)}</span>
+                  <span class="chip">3 recommendations</span>
+                </div>
+              </div>
+              <div class="model-status">0 / ${entry.recommendations.length} rated</div>
+            </div>
+            <div class="query-card">
+              <div class="query-label">Query song</div>
+              <strong>${entry.query.name}</strong><br />
+              <span class="track-meta">${entry.query.artist || "Metadata unavailable"}</span><br />
+              <iframe
+                src="${entry.query.spotify_embed_url}"
+                loading="lazy"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+              </iframe>
+              <a class="track-link" href="${entry.query.spotify_url}" target="_blank" rel="noreferrer">Open query in Spotify</a>
+              <div class="survey-hint">Use the query song as your reference. Rate each suggested song by how well it fits with that query.</div>
+            </div>
+            <div class="recommendation-grid">
+              ${entry.recommendations.map((track, index) => `
+                <article class="recommendation-card" data-model-id="${entry.model.model_id}" data-track-id="${track.spotify_id}">
+                  <div class="rank">Recommendation ${index + 1}</div>
+                  <h3 class="track-title">${track.name}</h3>
+                  <div class="track-meta">
+                    ${track.artist || "Metadata unavailable"}<br />
+                    Similarity: ${typeof track.similarity === "number" ? track.similarity.toFixed(4) : "n/a"}
+                  </div>
+                  <iframe
+                    src="${track.spotify_embed_url}"
+                    loading="lazy"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+                  </iframe>
+                  <a class="track-link" href="${track.spotify_url}" target="_blank" rel="noreferrer">Open in Spotify</a>
+                  <div class="rating-group">
+                    <button class="rating-button" type="button" data-rating="1">Good</button>
+                    <button class="rating-button" type="button" data-rating="0">Neutral</button>
+                    <button class="rating-button" type="button" data-rating="-1">Bad</button>
+                    <button class="rating-button" type="button" data-rating="2">Skip</button>
+                  </div>
+                  <div class="saved-note">Not rated yet.</div>
+                </article>
+              `).join("")}
+            </div>
+          </section>
+        `).join("");
+
+        for (const card of modelsRoot.querySelectorAll(".recommendation-card")) {
+          for (const button of card.querySelectorAll(".rating-button")) {
+            button.addEventListener("click", async () => {
+              await saveRating(card.dataset.modelId, card.dataset.trackId, Number(button.dataset.rating));
+            });
+          }
+        }
+      }
+
+      function updateCardState(modelId, trackId, rating) {
+        const selector = `.recommendation-card[data-model-id="${modelId}"][data-track-id="${trackId}"]`;
+        const card = modelsRoot.querySelector(selector);
+        if (!card) return;
+        const savedNote = card.querySelector(".saved-note");
+        card.classList.add("is-rated");
+        for (const button of card.querySelectorAll(".rating-button")) {
+          button.classList.remove("active-good", "active-neutral", "active-bad", "active-skip");
+          const value = Number(button.dataset.rating);
+          if (value === rating) {
+            if (value === 1) button.classList.add("active-good");
+            if (value === 0) button.classList.add("active-neutral");
+            if (value === -1) button.classList.add("active-bad");
+            if (value === 2) button.classList.add("active-skip");
+          }
+        }
+        savedNote.textContent = rating === 2 ? "Skipped." : "Saved.";
+      }
+
+      async function saveRating(modelId, trackId, rating) {
+        if (!currentSession) return;
+        statusRoot.textContent = "Saving response...";
+        const payload = await requestJson("/api/evaluation/response", {
+          method: "POST",
+          body: JSON.stringify({
+            session_id: currentSession.session_id,
+            model_id: modelId,
+            recommendation_spotify_id: trackId,
+            rating,
+          }),
+        });
+        ratings.set(responseKey(modelId, trackId), rating);
+        updateCardState(modelId, trackId, rating);
+        statusRoot.textContent = payload.rated_items === payload.total_items
+          ? "Final response saved."
+          : "Response saved. Continue with the next unrated card.";
+        updateProgress();
+      }
+
+      async function startSession() {
+        statusRoot.textContent = "Loading a random held-out batch...";
+        modelsRoot.innerHTML = "";
+        ratings = new Map();
+        updateProgress();
+        const payload = await requestJson("/api/evaluation/session", { method: "POST" });
+        currentSession = payload;
+        sessionIdRoot.textContent = payload.session_id.slice(0, 8);
+        progressCountRoot.textContent = `0 / ${payload.total_items}`;
+        modelCountRoot.textContent = String(payload.total_models);
+        progressCopyRoot.textContent = `${payload.total_items} ratings remaining`;
+        progressPercentRoot.textContent = "0%";
+        progressFillRoot.style.width = "0%";
+        statusRoot.textContent = "Rate every recommendation card below. Responses save immediately.";
+        renderModels();
+        updateProgress();
+      }
+
+      newBatchButton.addEventListener("click", () => {
+        startSession();
+      });
+      resetBatchButton.addEventListener("click", () => {
+        startSession();
+      });
+    </script>
+  </body>
+</html>

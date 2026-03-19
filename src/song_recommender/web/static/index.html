@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stem Song Recommender</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --bg-alt: #11161f;
+        --paper: rgba(22, 27, 34, 0.92);
+        --paper-strong: rgba(30, 36, 46, 0.98);
+        --text: #e6edf3;
+        --muted: #94a3b8;
+        --accent: #58a6ff;
+        --accent-2: #7ee787;
+        --line: rgba(230, 237, 243, 0.1);
+        --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(88, 166, 255, 0.16), transparent 28%),
+          radial-gradient(circle at top right, rgba(126, 231, 135, 0.08), transparent 22%),
+          linear-gradient(180deg, #0b0f14 0%, var(--bg) 100%);
+      }
+      main {
+        width: min(1100px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 40px 0 64px;
+      }
+      h1 {
+        font-size: clamp(2.8rem, 6vw, 5rem);
+        line-height: 0.92;
+        max-width: 8ch;
+        margin: 0 0 12px;
+      }
+      .subtitle {
+        max-width: 62ch;
+        color: var(--muted);
+        line-height: 1.6;
+        margin-bottom: 28px;
+      }
+      .hero-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 28px;
+      }
+      .hero-copy {
+        min-width: 0;
+      }
+      .hero-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 14px;
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid var(--line);
+        background: rgba(13, 17, 23, 0.88);
+      }
+      .hero-link:hover {
+        border-color: rgba(88, 166, 255, 0.45);
+        background: rgba(22, 27, 34, 1);
+      }
+      .mode-nav {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(13, 17, 23, 0.88);
+      }
+      .mode-nav a {
+        color: var(--muted);
+        padding: 10px 14px;
+        border-radius: 999px;
+      }
+      .mode-nav a.active {
+        color: var(--text);
+        background: rgba(88, 166, 255, 0.18);
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+        gap: 20px;
+      }
+      .panel {
+        background: linear-gradient(180deg, var(--paper) 0%, var(--paper-strong) 100%);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 22px;
+        box-shadow: var(--shadow);
+        min-width: 0;
+      }
+      .layout > *,
+      .hero-row > *,
+      .panel > *,
+      .card,
+      .compare-card,
+      .map-card,
+      .viz-card,
+      .artist-song,
+      .toolbar,
+      .collapse-head,
+      .search-row {
+        min-width: 0;
+      }
+      .panel,
+      .card,
+      .compare-card,
+      .map-card,
+      .viz-card,
+      .artist-song,
+      .toolbar,
+      .collapse-head,
+      .helper,
+      .muted,
+      .subtitle,
+      .spotify-id,
+      .map-hover-label,
+      .collapse-title,
+      .collapse-hint,
+      h1,
+      h2,
+      h3,
+      p,
+      span,
+      strong,
+      summary {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      select,
+      input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        font: inherit;
+        color: var(--text);
+        background: rgba(13, 17, 23, 0.9);
+      }
+      .controls {
+        display: grid;
+        gap: 12px;
+      }
+      .search-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+      }
+      .field-label {
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .helper {
+        margin-top: -4px;
+        color: var(--muted);
+        font-size: 0.84rem;
+        line-height: 1.4;
+      }
+      input[type="range"] {
+        padding: 0;
+        height: auto;
+        accent-color: var(--accent);
+        background: transparent;
+        border: 0;
+      }
+      .range-row {
+        display: grid;
+        gap: 6px;
+      }
+      .range-labels {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+      .stack {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .legend {
+        margin-top: 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(13, 17, 23, 0.4);
+        color: var(--muted);
+        font-size: 0.86rem;
+        line-height: 1.5;
+      }
+      button {
+        width: 100%;
+        text-align: left;
+        color: var(--text);
+        background: rgba(13, 17, 23, 0.88);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px 16px;
+        cursor: pointer;
+        transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
+      }
+      button:hover {
+        border-color: rgba(88, 166, 255, 0.45);
+        background: rgba(22, 27, 34, 1);
+        transform: translateY(-1px);
+      }
+      .search-row button,
+      .toolbar button,
+      .mini-button,
+      .map-popup button {
+        width: auto;
+        max-width: 100%;
+        white-space: nowrap;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+        background: rgba(13, 17, 23, 0.62);
+        margin-top: 12px;
+      }
+      .compare-card {
+        border: 1px solid rgba(88, 166, 255, 0.18);
+        border-radius: 16px;
+        padding: 16px;
+        background: rgba(88, 166, 255, 0.08);
+        margin-top: 12px;
+      }
+      .map-card {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+        background: rgba(13, 17, 23, 0.52);
+        margin-top: 12px;
+      }
+      .map-card details[open] summary,
+      .viz-card details[open] summary {
+        margin-bottom: 10px;
+      }
+      .map-wrap {
+        margin-top: 10px;
+        position: relative;
+      }
+      .map-svg {
+        width: 100%;
+        height: 320px;
+        border-radius: 14px;
+        background:
+          radial-gradient(circle at 50% 20%, rgba(88, 166, 255, 0.08), transparent 34%),
+          rgba(20, 26, 35, 0.88);
+        border: 1px solid var(--line);
+        cursor: grab;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .map-svg.dragging {
+        cursor: grabbing;
+      }
+      .map-point {
+        cursor: pointer;
+      }
+      .map-hover-label {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform: translate(-50%, calc(-100% - 10px));
+        padding: 6px 9px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: rgba(22, 27, 34, 0.96);
+        color: var(--text);
+        font-size: 0.78rem;
+        pointer-events: none;
+        white-space: nowrap;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.26);
+        z-index: 5;
+      }
+      .map-hover-label strong {
+        display: block;
+        font-size: 0.8rem;
+      }
+      .map-hover-label span {
+        display: block;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .map-caption {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+      summary {
+        cursor: pointer;
+        color: var(--text);
+        list-style: none;
+      }
+      summary::-webkit-details-marker {
+        display: none;
+      }
+      .collapse-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 12px;
+        border: 1px dashed rgba(88, 166, 255, 0.24);
+        border-radius: 12px;
+        background: rgba(88, 166, 255, 0.06);
+      }
+      .collapse-title {
+        font-size: 0.92rem;
+        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .collapse-hint {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .map-popup {
+        position: absolute;
+        width: 360px;
+        max-width: calc(100% - 24px);
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(22, 27, 34, 0.96);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.32);
+        z-index: 4;
+      }
+      .map-popup button {
+        width: auto;
+        margin-top: 10px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 0.78rem;
+      }
+      .map-popup iframe {
+        height: 152px;
+        margin-top: 10px;
+      }
+      .viz-card {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+        background: rgba(13, 17, 23, 0.5);
+        margin-top: 12px;
+      }
+      .viz-title {
+        margin-bottom: 10px;
+        font-size: 0.92rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .artist-list {
+        display: grid;
+        gap: 8px;
+      }
+      .artist-song {
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: rgba(13, 17, 23, 0.45);
+        cursor: pointer;
+        transition: border-color 120ms ease, background 120ms ease;
+      }
+      .artist-song:hover {
+        border-color: rgba(88, 166, 255, 0.45);
+        background: rgba(22, 27, 34, 0.82);
+      }
+      .artist-summary {
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+      .toolbar button {
+        width: auto;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+      }
+      .mini-button {
+        width: auto;
+        margin-top: 10px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 0.78rem;
+      }
+      .meta-chip {
+        display: inline-block;
+        margin-bottom: 8px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        background: rgba(88, 166, 255, 0.12);
+        color: var(--accent);
+      }
+      .spotify-id {
+        display: inline-block;
+        margin-top: 6px;
+        font-size: 0.78rem;
+        color: var(--muted);
+        word-break: break-all;
+      }
+      .tag-row {
+        margin-top: 4px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 7px;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        background: rgba(148, 163, 184, 0.08);
+        color: var(--muted);
+        border: 1px solid rgba(148, 163, 184, 0.08);
+      }
+      iframe {
+        width: 100%;
+        max-width: 100%;
+        height: 152px;
+        border: 0;
+        border-radius: 14px;
+        margin-top: 12px;
+        display: block;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+        overflow-wrap: anywhere;
+      }
+      @media (max-width: 900px) {
+        .hero-row {
+          flex-direction: column;
+        }
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Stem Song Recommender</h1>
+      <div class="hero-row">
+        <div class="hero-copy">
+          <p class="subtitle">
+            Search a track, switch models, and compare song, mix, or stem-based recommendations in one place.
+          </p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <nav class="mode-nav" aria-label="Mode navigation">
+            <a class="active" href="/">Demo</a>
+            <a href="/evaluation">Evaluation</a>
+          </nav>
+          <a class="hero-link" href="/manifold">Open song space explorer</a>
+          <a class="hero-link" href="/stats">Open global stats</a>
+        </div>
+      </div>
+
+      <section class="layout">
+        <aside class="panel">
+          <div class="controls">
+            <div class="field-label">Model</div>
+            <select id="model"></select>
+            <div class="field-label">Recommendation Style</div>
+            <select id="space"></select>
+            <div class="helper" id="space-helper"></div>
+            <div id="blend-control" class="range-row">
+              <div class="field-label">Mix vs Stem Blend</div>
+              <input id="blend" type="range" min="0" max="100" value="50" />
+              <div class="range-labels">
+                <span>More texture / full mix</span>
+                <span>More stem structure</span>
+              </div>
+              <div class="helper" id="blend-helper"></div>
+            </div>
+            <div id="model-legend" class="legend"></div>
+            <div class="field-label">Find a Song</div>
+            <div class="search-row">
+              <input id="search" type="search" placeholder="Search artist, track, or Spotify ID" />
+              <button id="random-song" type="button">Random song</button>
+            </div>
+          </div>
+          <div id="results" class="stack"></div>
+        </aside>
+        <section class="panel">
+          <div id="recommendations" class="muted">Choose a track to load recommendations.</div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const modelSelect = document.getElementById("model");
+      const spaceSelect = document.getElementById("space");
+      const spaceHelper = document.getElementById("space-helper");
+      const blendControl = document.getElementById("blend-control");
+      const blendInput = document.getElementById("blend");
+      const blendHelper = document.getElementById("blend-helper");
+      const modelLegend = document.getElementById("model-legend");
+      const searchInput = document.getElementById("search");
+      const randomSongButton = document.getElementById("random-song");
+      const resultsRoot = document.getElementById("results");
+      const recommendationsRoot = document.getElementById("recommendations");
+      let modelsById = new Map();
+      let currentModel = null;
+      let currentSpace = null;
+      let currentQueryId = null;
+      let currentBlend = 0.5;
+      let currentDistance = null;
+      let currentNeighborhood = null;
+      let currentMapPopupId = null;
+      let currentRecommendationsPayload = null;
+      let isNeighborhoodOpen = false;
+      let isArtistProfileOpen = false;
+      let isShiftZoomActive = false;
+
+      async function getJson(url) {
+        const response = await fetch(url);
+        if (!response.ok) {
+          let detail = `Request failed: ${response.status}`;
+          try {
+            const payload = await response.json();
+            if (payload && typeof payload.detail === "string" && payload.detail) {
+              detail = payload.detail;
+            }
+          } catch (_error) {
+            // Ignore JSON parsing failures and keep the HTTP status fallback.
+          }
+          throw new Error(detail);
+        }
+        return response.json();
+      }
+
+      function modelQuery() {
+        return currentModel ? `model=${encodeURIComponent(currentModel)}` : "";
+      }
+      function spaceQuery() {
+        return currentSpace ? `space=${encodeURIComponent(currentSpace)}` : "";
+      }
+      function blendQuery() {
+        return `blend=${encodeURIComponent(currentBlend.toFixed(2))}`;
+      }
+
+      async function loadDistance(otherSpotifyId) {
+        if (!currentQueryId) return;
+        const query = modelQuery();
+        const space = spaceQuery();
+        const parts = [blendQuery()];
+        if (query) parts.push(query);
+        if (space) parts.push(space);
+        const payload = await getJson(`/api/distance/${currentQueryId}/${otherSpotifyId}?${parts.join("&")}`);
+        currentDistance = payload;
+      }
+
+      async function loadNeighborhood(spotifyId) {
+        const query = modelQuery();
+        const space = spaceQuery();
+        const parts = [`limit=20`, blendQuery()];
+        if (query) parts.push(query);
+        if (space) parts.push(space);
+        currentNeighborhood = await getJson(`/api/neighborhood/${spotifyId}?${parts.join("&")}`);
+      }
+
+      function updateModelSelector(models) {
+        modelsById = new Map(models.map((model) => [model.model_id, model]));
+        modelSelect.innerHTML = models.map((model) => `
+          <option value="${model.model_id}" ${model.available ? "" : "disabled"}>
+            ${model.label}${model.available ? "" : " (missing)"}
+          </option>
+        `).join("");
+        if (!currentModel && models.length) {
+          const firstAvailable = models.find((model) => model.available);
+          if (firstAvailable) currentModel = firstAvailable.model_id;
+        }
+        modelSelect.value = currentModel;
+        updateSpaceSelector();
+        renderModelLegend();
+      }
+
+      function updateSpaceSelector() {
+        const model = modelsById.get(currentModel);
+        const spaces = (model && model.spaces && model.spaces.length) ? model.spaces : ["song"];
+        if (!spaces.includes(currentSpace)) currentSpace = spaces[0];
+        spaceSelect.innerHTML = spaces.map((space) => `
+          <option value="${space}">${spaceLabel(space)}</option>
+        `).join("");
+        spaceSelect.value = currentSpace;
+        spaceSelect.disabled = spaces.length <= 1;
+        spaceHelper.textContent = spaceDescription(currentSpace);
+        blendControl.style.display = currentSpace === "blend" ? "grid" : "none";
+        blendHelper.textContent = blendDescription(currentBlend);
+      }
+
+      function spaceLabel(space) {
+        const labels = {
+          song: "Whole song",
+          mix: "Mix only",
+          stem: "Stem only",
+          blend: "Mix + stem blend",
+        };
+        return labels[space] || space;
+      }
+
+      function spaceDescription(space) {
+        const descriptions = {
+          song: "Uses the model's main recommendation embedding.",
+          mix: "Focuses more on the full-mix audio representation.",
+          stem: "Focuses more on separated stem information.",
+          blend: "Blends full-mix texture with stem-aware structure using the slider below.",
+        };
+        return descriptions[space] || "";
+      }
+
+      function blendDescription(value) {
+        const pct = Math.round(value * 100);
+        return `Current blend: ${pct}% toward stem structure. This shows mix vs stem tradeoffs from the notebooks, but not isolated drum-only or harmonic-only matching.`;
+      }
+
+      function renderTagRow(track) {
+        if (track.tags && track.tags.length) {
+          return `<div class="tag-row">${track.tags.slice(0, 2).map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>`;
+        }
+        return `<div class="tag-row"><span class="tag">Tags unavailable</span></div>`;
+      }
+
+      async function renderArtistProfile(queryTrack) {
+        const artist = queryTrack.artist || "";
+        if (!artist || artist === "Metadata unavailable") {
+          return "";
+        }
+        const query = modelQuery();
+        const params = [
+          `artist=${encodeURIComponent(artist)}`,
+          `exclude_spotify_id=${encodeURIComponent(queryTrack.spotify_id)}`,
+          `limit=8`,
+        ];
+        if (query) params.push(query);
+        const payload = await getJson(`/api/artist-profile?${params.join("&")}`);
+        if (!payload.tracks.length) {
+          return "";
+        }
+        return `
+          <div class="viz-card">
+            <details id="artist-profile-details" ${isArtistProfileOpen ? "open" : ""}>
+              <summary>
+                <div class="collapse-head">
+                  <span class="collapse-title">Artist Profile</span>
+                  <span class="collapse-hint">Click to open</span>
+                </div>
+              </summary>
+              <div class="artist-summary">${payload.artist} has ${payload.count} other song${payload.count === 1 ? "" : "s"} in this database.</div>
+              <div class="artist-list">
+                ${payload.tracks.map((track) => `
+                  <div class="artist-song artist-profile-song" data-id="${track.spotify_id}">
+                    <strong>${track.name}</strong><br />
+                    <span class="muted">${track.artist || "Metadata unavailable"}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </details>
+          </div>
+        `;
+      }
+
+      function getNeighborhoodPopupPoint() {
+        if (!currentNeighborhood || !currentNeighborhood.points || !currentMapPopupId) {
+          return null;
+        }
+        return currentNeighborhood.points.find((point) => point.spotify_id === currentMapPopupId) || null;
+      }
+
+      function renderNeighborhoodPopup(point) {
+        if (!point) return "";
+        const width = 700;
+        const height = 320;
+        const pad = 28;
+        const sx = pad + point.x * (width - pad * 2);
+        const sy = pad + (1 - point.y) * (height - pad * 2);
+        const popupLeft = Math.min(Math.max(sx + 12, 12), width - 372);
+        const popupTop = Math.min(Math.max(sy + 12, 12), height - 176);
+        return `
+          <div class="map-popup" style="left:${popupLeft}px; top:${popupTop}px;">
+            <strong>${point.name}</strong><br />
+            <span class="muted">${point.artist || "Metadata unavailable"}</span><br />
+            <button id="popup-use-query" data-id="${point.spotify_id}">Use as query</button>
+            <iframe
+              src="${point.spotify_embed_url}"
+              loading="lazy"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+            </iframe>
+          </div>
+        `;
+      }
+
+      function renderNeighborhoodMap(neighborhood) {
+        if (!neighborhood || !neighborhood.points || !neighborhood.points.length) {
+          return "";
+        }
+        const width = 700;
+        const height = 320;
+        const pad = 28;
+        const points = neighborhood.points.map((point) => {
+          const x = pad + point.x * (width - pad * 2);
+          const y = pad + (1 - point.y) * (height - pad * 2);
+          return { ...point, sx: x, sy: y };
+        });
+        const placedLabels = [];
+        const labelCandidates = [...points].sort((a, b) => {
+          if (a.is_query && !b.is_query) return -1;
+          if (!a.is_query && b.is_query) return 1;
+          return (b.similarity ?? -1) - (a.similarity ?? -1);
+        });
+        const visibleLabels = [];
+        for (const point of labelCandidates) {
+          if (visibleLabels.length >= 7) break;
+          const label = point.name;
+          const box = {
+            left: point.sx + 10,
+            right: point.sx + 10 + Math.max(60, label.length * 6.5),
+            top: point.sy - 20,
+            bottom: point.sy - 6,
+          };
+          const overlaps = placedLabels.some((placed) =>
+            !(box.right < placed.left || box.left > placed.right || box.bottom < placed.top || box.top > placed.bottom)
+          );
+          if (overlaps) continue;
+          placedLabels.push(box);
+          visibleLabels.push(point);
+        }
+        const popupPoint = currentMapPopupId ? points.find((point) => point.spotify_id === currentMapPopupId) : null;
+
+        return `
+          <div class="map-card">
+            <details id="neighborhood-details" ${isNeighborhoodOpen || currentMapPopupId ? "open" : ""}>
+              <summary>
+                <div class="collapse-head">
+                  <span class="collapse-title">Local Song Space</span>
+                  <span class="collapse-hint">Click to open and drag the map</span>
+                </div>
+              </summary>
+              <div class="map-wrap">
+                <svg id="neighborhood-map" class="map-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Local song neighborhood map">
+                  <g id="map-pan-layer">
+                    ${points.map((point) => `
+                      <g class="map-point" data-id="${point.spotify_id}" data-name="${point.name.replace(/"/g, "&quot;")}" data-artist="${(point.artist || "Metadata unavailable").replace(/"/g, "&quot;")}">
+                        <circle cx="${point.sx}" cy="${point.sy}" r="${point.is_query ? 8 : 5}"
+                          fill="${point.is_query ? '#7ee787' : currentMapPopupId === point.spotify_id ? '#1f6feb' : '#58a6ff'}"
+                          opacity="${point.is_query ? 1 : 0.82}" />
+                        ${currentMapPopupId === point.spotify_id ? `
+                          <circle cx="${point.sx}" cy="${point.sy}" r="${point.is_query ? 10 : 6.5}"
+                            fill="none"
+                            stroke="rgba(230, 237, 243, 0.95)"
+                            stroke-width="1.5" />
+                        ` : ""}
+                        <title>${point.name} - ${point.artist}${point.similarity !== null ? ` | similarity ${point.similarity}` : ''}</title>
+                      </g>
+                    `).join("")}
+                    ${visibleLabels.map((point) => `
+                      <text x="${point.sx + 10}" y="${point.sy - 10}" fill="#c2d4e8" font-size="11">
+                        ${point.name}
+                      </text>
+                    `).join("")}
+                  </g>
+                </svg>
+                <div id="map-hover-label" class="map-hover-label" hidden></div>
+                ${popupPoint ? `
+                  ${renderNeighborhoodPopup(popupPoint)}
+                ` : ""}
+              </div>
+              <div class="map-caption">
+                Query track is green. Some song names are shown by default. Hover a point to see song and artist. Hold Shift while scrolling to zoom, drag to pan, and single-click a point for a preview popup.
+              </div>
+            </details>
+          </div>
+        `;
+      }
+
+      function renderModelLegend() {
+        const model = modelsById.get(currentModel);
+        if (!model) {
+          modelLegend.textContent = "";
+          return;
+        }
+        const missing = Array.from(modelsById.values()).filter((item) => !item.available);
+        modelLegend.innerHTML = `
+          <strong>${model.label}</strong><br />
+          ${model.description}<br /><br />Current mode: Demo
+          <br />Current recommendation style: ${spaceLabel(currentSpace || "song")}
+          ${missing.length ? `<br /><br />Missing locally: ${missing.map((item) => `${item.label}`).join(", ")}` : ""}
+        `;
+      }
+
+      function renderResults(results) {
+        if (!results.length) {
+          resultsRoot.innerHTML = `<div class="muted">No tracks found in this model.</div>`;
+          return;
+        }
+        resultsRoot.innerHTML = results.map((track) => `
+          <button data-id="${track.spotify_id}" title="${track.spotify_id}">
+            <strong>${track.name}</strong><br />
+            <span class="muted">${track.artist || "Metadata unavailable"}</span>
+            ${renderTagRow(track)}
+          </button>
+        `).join("");
+        for (const button of resultsRoot.querySelectorAll("button")) {
+          button.addEventListener("click", () => loadRecommendations(button.dataset.id));
+        }
+      }
+
+      async function renderRecommendations(payload) {
+        currentRecommendationsPayload = payload;
+        const topEmbedCount = payload.recommendations.length;
+        const artistProfile = await renderArtistProfile(payload.query);
+        recommendationsRoot.innerHTML = `
+          <div class="toolbar">
+            <div class="muted">Pinned query stays selected while you switch model or style.</div>
+            <div>
+              ${currentQueryId ? `<button id="clear-pin">Clear pinned query</button>` : ""}
+            </div>
+          </div>
+          <div class="card">
+            <div class="meta-chip">${payload.model.label}</div>
+            <div class="meta-chip">Demo mode</div>
+            <strong>${payload.query.name}</strong><br />
+            <span class="muted">${payload.query.artist || "Metadata unavailable"}</span><br />
+            <a href="${payload.query.spotify_url}" target="_blank" rel="noreferrer">Open in Spotify</a>
+            <div class="spotify-id">${payload.query.spotify_id}</div>
+            <iframe
+              src="${payload.query.spotify_embed_url}"
+              loading="lazy"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+            </iframe>
+          </div>
+          ${currentDistance ? `
+            <div class="compare-card">
+              <div class="viz-title">Song Distance</div>
+              <strong>${currentDistance.track_a.name}</strong> vs <strong>${currentDistance.track_b.name}</strong><br />
+              <span class="muted">${currentDistance.track_a.artist || "Metadata unavailable"} and ${currentDistance.track_b.artist || "Metadata unavailable"}</span><br /><br />
+              <span class="muted">Cosine similarity: ${currentDistance.cosine_similarity.toFixed(4)}</span><br />
+              <span class="muted">Cosine distance: ${currentDistance.cosine_distance.toFixed(4)}</span>
+            </div>
+          ` : ""}
+          ${renderNeighborhoodMap(currentNeighborhood)}
+          ${artistProfile}
+          ${payload.recommendations.map((track, index) => `
+            <div class="card">
+              <strong>${track.name}</strong><br />
+              <span class="muted">${track.artist || "Metadata unavailable"}</span><br />
+              <span class="muted">Cosine similarity: ${track.similarity.toFixed(4)}</span><br />
+              <a href="${track.spotify_url}" target="_blank" rel="noreferrer">Open in Spotify</a>
+              <div class="spotify-id">${track.spotify_id}</div>
+              <button class="mini-button use-query-button" data-id="${track.spotify_id}">Use as query</button>
+              <button class="mini-button compare-button" data-id="${track.spotify_id}">Compare with query</button>
+              ${index < topEmbedCount ? `
+                <iframe
+                  src="${track.spotify_embed_url}"
+                  loading="lazy"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+                </iframe>
+              ` : ""}
+            </div>
+          `).join("")}
+        `;
+        const clearPin = document.getElementById("clear-pin");
+        if (clearPin) {
+          clearPin.addEventListener("click", () => {
+            currentQueryId = null;
+            currentDistance = null;
+            currentNeighborhood = null;
+            currentMapPopupId = null;
+            currentRecommendationsPayload = null;
+            recommendationsRoot.textContent = "Choose a track to load recommendations.";
+          });
+        }
+        const neighborhoodDetails = document.getElementById("neighborhood-details");
+        if (neighborhoodDetails) {
+          neighborhoodDetails.addEventListener("toggle", () => {
+            isNeighborhoodOpen = neighborhoodDetails.open;
+          });
+        }
+        const artistProfileDetails = document.getElementById("artist-profile-details");
+        if (artistProfileDetails) {
+          artistProfileDetails.addEventListener("toggle", () => {
+            isArtistProfileOpen = artistProfileDetails.open;
+          });
+        }
+        for (const card of recommendationsRoot.querySelectorAll(".artist-profile-song")) {
+          card.addEventListener("click", async () => {
+            currentMapPopupId = null;
+            await loadRecommendations(card.dataset.id);
+          });
+        }
+        for (const button of recommendationsRoot.querySelectorAll(".compare-button")) {
+          button.addEventListener("click", async () => {
+            await loadDistance(button.dataset.id);
+            await renderRecommendations(payload);
+          });
+        }
+        for (const button of recommendationsRoot.querySelectorAll(".use-query-button")) {
+          button.addEventListener("click", async () => {
+            currentMapPopupId = null;
+            await loadRecommendations(button.dataset.id);
+          });
+        }
+        const popupUseQuery = document.getElementById("popup-use-query");
+        if (popupUseQuery) {
+          popupUseQuery.addEventListener("click", async () => {
+            currentMapPopupId = null;
+            await loadRecommendations(popupUseQuery.dataset.id);
+          });
+        }
+        initializeMapPan();
+      }
+
+      function updateNeighborhoodPopupOnly() {
+        const mapWrap = document.querySelector(".map-wrap");
+        if (!mapWrap) return;
+        const existing = mapWrap.querySelector(".map-popup");
+        if (existing) existing.remove();
+        const point = getNeighborhoodPopupPoint();
+        if (!point) return;
+        mapWrap.insertAdjacentHTML("beforeend", renderNeighborhoodPopup(point));
+        const popupUseQuery = document.getElementById("popup-use-query");
+        if (popupUseQuery) {
+          popupUseQuery.addEventListener("click", async () => {
+            currentMapPopupId = null;
+            await loadRecommendations(popupUseQuery.dataset.id);
+          });
+        }
+      }
+
+      function initializeMapPan() {
+        const svg = document.getElementById("neighborhood-map");
+        const layer = document.getElementById("map-pan-layer");
+        const hoverLabel = document.getElementById("map-hover-label");
+        const mapWrap = document.querySelector(".map-wrap");
+        if (!svg || !layer) return;
+
+        let dragging = false;
+        let startX = 0;
+        let startY = 0;
+        let offsetX = 0;
+        let offsetY = 0;
+        let scale = 1;
+        let moved = false;
+
+        const apply = () => {
+          layer.setAttribute("transform", `translate(${offsetX} ${offsetY}) scale(${scale})`);
+        };
+
+        const showHoverLabel = (event, point) => {
+          if (!hoverLabel || !mapWrap) return;
+          const rect = mapWrap.getBoundingClientRect();
+          hoverLabel.hidden = false;
+          hoverLabel.innerHTML = `<strong>${point.dataset.name || ""}</strong><span>${point.dataset.artist || ""}</span>`;
+          hoverLabel.style.left = `${event.clientX - rect.left}px`;
+          hoverLabel.style.top = `${event.clientY - rect.top}px`;
+        };
+
+        const hideHoverLabel = () => {
+          if (!hoverLabel) return;
+          hoverLabel.hidden = true;
+        };
+
+        svg.addEventListener("pointerdown", (event) => {
+          dragging = true;
+          moved = false;
+          startX = event.clientX;
+          startY = event.clientY;
+          svg.classList.add("dragging");
+          event.preventDefault();
+        });
+
+        window.addEventListener("pointermove", (event) => {
+          if (!dragging) return;
+          const dx = event.clientX - startX;
+          const dy = event.clientY - startY;
+          if (Math.abs(dx) > 1 || Math.abs(dy) > 1) moved = true;
+          offsetX += event.clientX - startX;
+          offsetY += event.clientY - startY;
+          startX = event.clientX;
+          startY = event.clientY;
+          apply();
+          event.preventDefault();
+        });
+
+        window.addEventListener("pointerup", (event) => {
+          dragging = false;
+          svg.classList.remove("dragging");
+          event.preventDefault();
+        });
+
+        svg.addEventListener("wheel", (event) => {
+          if (!isShiftZoomActive && !event.shiftKey) return;
+          const rect = svg.getBoundingClientRect();
+          const cursorX = event.clientX - rect.left;
+          const cursorY = event.clientY - rect.top;
+          const dominantDelta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+          if (Math.abs(dominantDelta) < 0.01) return;
+          const zoomFactor = dominantDelta < 0 ? 1.12 : 0.9;
+          const nextScale = Math.min(4, Math.max(1, scale * zoomFactor));
+          if (Math.abs(nextScale - scale) < 1e-6) return;
+
+          const svgX = (cursorX - offsetX) / scale;
+          const svgY = (cursorY - offsetY) / scale;
+          scale = nextScale;
+          offsetX = cursorX - svgX * scale;
+          offsetY = cursorY - svgY * scale;
+          apply();
+          event.preventDefault();
+        }, { passive: false });
+
+        for (const point of svg.querySelectorAll(".map-point")) {
+          point.addEventListener("pointerenter", (event) => {
+            showHoverLabel(event, point);
+          });
+          point.addEventListener("pointermove", (event) => {
+            showHoverLabel(event, point);
+          });
+          point.addEventListener("pointerleave", () => {
+            hideHoverLabel();
+          });
+          point.addEventListener("click", (event) => {
+            event.stopPropagation();
+            if (moved) return;
+            currentMapPopupId = point.dataset.id;
+            updateNeighborhoodPopupOnly();
+          });
+        }
+        svg.addEventListener("click", (event) => {
+          if (event.target.closest(".map-point")) return;
+          if (moved) return;
+          currentMapPopupId = null;
+          updateNeighborhoodPopupOnly();
+        });
+        svg.addEventListener("pointerleave", () => {
+          if (!dragging) hideHoverLabel();
+        });
+      }
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Shift") {
+          isShiftZoomActive = true;
+        }
+      });
+
+      window.addEventListener("keyup", (event) => {
+        if (event.key === "Shift") {
+          isShiftZoomActive = false;
+        }
+      });
+
+      window.addEventListener("blur", () => {
+        isShiftZoomActive = false;
+      });
+
+      async function loadRecommendations(spotifyId) {
+        recommendationsRoot.textContent = "Loading recommendations...";
+        try {
+          const query = modelQuery();
+          const space = spaceQuery();
+          const parts = [`limit=10`, blendQuery()];
+          if (query) parts.push(query);
+          if (space) parts.push(space);
+          const payload = await getJson(`/api/recommend/${spotifyId}?${parts.join("&")}`);
+          currentQueryId = spotifyId;
+          if (currentDistance && currentDistance.track_a.spotify_id !== spotifyId) {
+            currentDistance = null;
+          }
+          if (currentMapPopupId === spotifyId) {
+            currentMapPopupId = null;
+          }
+          await loadNeighborhood(spotifyId);
+          await renderRecommendations(payload);
+        } catch (error) {
+          currentQueryId = null;
+          currentDistance = null;
+          currentNeighborhood = null;
+          currentMapPopupId = null;
+          currentRecommendationsPayload = null;
+          recommendationsRoot.textContent = error.message;
+        }
+      }
+
+      let timer = null;
+      searchInput.addEventListener("input", () => {
+        clearTimeout(timer);
+        timer = setTimeout(loadResults, 150);
+      });
+      modelSelect.addEventListener("change", () => {
+        currentModel = modelSelect.value;
+        updateSpaceSelector();
+        renderModelLegend();
+        if (currentQueryId) {
+          loadRecommendations(currentQueryId);
+        } else {
+          currentDistance = null;
+          currentNeighborhood = null;
+          recommendationsRoot.textContent = "Choose a track to load recommendations.";
+        }
+        loadResults();
+      });
+      spaceSelect.addEventListener("change", () => {
+        currentSpace = spaceSelect.value;
+        spaceHelper.textContent = spaceDescription(currentSpace);
+        blendControl.style.display = currentSpace === "blend" ? "grid" : "none";
+        renderModelLegend();
+        if (currentQueryId) {
+          loadRecommendations(currentQueryId);
+        } else {
+          currentDistance = null;
+          currentNeighborhood = null;
+          recommendationsRoot.textContent = "Choose a track to load recommendations.";
+        }
+      });
+      blendInput.addEventListener("input", () => {
+        currentBlend = Number(blendInput.value) / 100;
+        blendHelper.textContent = blendDescription(currentBlend);
+      });
+      blendInput.addEventListener("change", () => {
+        currentBlend = Number(blendInput.value) / 100;
+        if (currentQueryId && currentSpace === "blend") {
+          loadRecommendations(currentQueryId);
+        }
+      });
+
+      async function loadResults() {
+        const q = searchInput.value.trim();
+        const query = modelQuery();
+        const endpoint = q
+          ? `/api/search?q=${encodeURIComponent(q)}&limit=12${query ? `&${query}` : ""}`
+          : `/api/random?limit=12${query ? `&${query}` : ""}`;
+        const payload = await getJson(endpoint);
+        renderResults(payload.results);
+      }
+
+      async function chooseRandomSong() {
+        const query = modelQuery();
+        const endpoint = `/api/random?limit=1${query ? `&${query}` : ""}`;
+        const payload = await getJson(endpoint);
+        if (payload.results && payload.results.length) {
+          searchInput.value = "";
+          await loadRecommendations(payload.results[0].spotify_id);
+          await loadResults();
+        }
+      }
+
+      async function bootstrap() {
+        const payload = await getJson("/api/models");
+        updateModelSelector(payload.models);
+        loadResults();
+      }
+
+      randomSongButton.addEventListener("click", () => {
+        chooseRandomSong();
+      });
+
+      bootstrap();
+    </script>
+  </body>
+</html>

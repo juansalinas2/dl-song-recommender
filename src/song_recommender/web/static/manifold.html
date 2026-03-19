@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Song Space Explorer</title>
+    <style>
+      :root {
+        --bg: #111a24;
+        --bg-alt: #162230;
+        --paper: rgba(24, 35, 47, 0.94);
+        --text: #e6edf3;
+        --muted: #94a3b8;
+        --accent: #6cb6ff;
+        --accent-2: #7ee787;
+        --line: rgba(230, 237, 243, 0.1);
+        --shadow: 0 28px 70px rgba(0, 0, 0, 0.35);
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      body {
+        margin: 0;
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(108, 182, 255, 0.2), transparent 30%),
+          radial-gradient(circle at top right, rgba(126, 231, 135, 0.1), transparent 26%),
+          linear-gradient(180deg, #0e151e 0%, var(--bg) 100%);
+      }
+      main {
+        width: min(1280px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 34px 0 54px;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 22px;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(2.6rem, 6vw, 4.8rem);
+        line-height: 0.92;
+        max-width: 8ch;
+      }
+      .subtitle {
+        margin: 0;
+        max-width: 62ch;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .nav-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 14px;
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid var(--line);
+        background: rgba(20, 30, 42, 0.88);
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 20px;
+      }
+      .panel {
+        background: linear-gradient(180deg, var(--paper) 0%, rgba(29, 41, 55, 0.98) 100%);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+        min-width: 0;
+      }
+      .layout > *,
+      .topbar > *,
+      .panel > *,
+      .search-row,
+      .info-grid > *,
+      .hud-card,
+      .card,
+      .stat {
+        min-width: 0;
+      }
+      .panel,
+      .card,
+      .stat,
+      .hud-card,
+      .subtitle,
+      .helper,
+      .muted,
+      .hover-label,
+      h1,
+      h2,
+      h3,
+      p,
+      span,
+      strong,
+      a {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      .controls, .stack { display: grid; gap: 12px; }
+      .field-label {
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      select, input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        font: inherit;
+        color: var(--text);
+        background: rgba(19, 29, 40, 0.92);
+      }
+      input[type="range"] {
+        padding: 0;
+        accent-color: var(--accent);
+        border: 0;
+        background: transparent;
+      }
+      button {
+        width: 100%;
+        text-align: left;
+        color: var(--text);
+        background: rgba(20, 30, 42, 0.92);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 12px 14px;
+        cursor: pointer;
+      }
+      .search-row button,
+      .view-actions button {
+        width: auto;
+        max-width: 100%;
+        white-space: nowrap;
+      }
+      button:hover {
+        border-color: rgba(108, 182, 255, 0.45);
+        background: rgba(30, 42, 56, 1);
+      }
+      .search-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+      }
+      .helper, .muted {
+        color: var(--muted);
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+      .range-block {
+        display: grid;
+        gap: 6px;
+      }
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+        background: rgba(21, 31, 43, 0.62);
+      }
+      .scene-card {
+        display: grid;
+        gap: 14px;
+      }
+      .canvas-wrap {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background:
+          radial-gradient(circle at 50% 30%, rgba(108, 182, 255, 0.14), transparent 34%),
+          linear-gradient(180deg, rgba(27, 39, 53, 0.94) 0%, rgba(19, 29, 41, 0.92) 100%);
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 640px;
+        cursor: grab;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      canvas.dragging {
+        cursor: grabbing;
+      }
+      .overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .hover-label {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform: translate(-50%, calc(-100% - 12px));
+        padding: 6px 9px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: rgba(24, 35, 47, 0.96);
+        color: var(--text);
+        font-size: 0.78rem;
+        white-space: nowrap;
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+      }
+      .hud {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        display: grid;
+        gap: 10px;
+        width: min(320px, calc(100% - 32px));
+      }
+      .hud-card {
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(24, 35, 47, 0.92);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+      }
+      .legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .legend span::before {
+        content: "";
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      .legend .query::before { background: #7ee787; }
+      .legend .neighbor::before { background: #6cb6ff; }
+      .legend .context::before { background: rgba(148, 163, 184, 0.75); }
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .view-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .view-actions button {
+        width: auto;
+        padding: 8px 10px;
+        border-radius: 10px;
+      }
+      .stat {
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: rgba(22, 33, 45, 0.68);
+      }
+      .results button strong {
+        display: block;
+      }
+      .empty {
+        display: grid;
+        place-items: center;
+        min-height: 640px;
+        color: var(--muted);
+      }
+      iframe {
+        width: 100%;
+        max-width: 100%;
+        height: 152px;
+        border: 0;
+        border-radius: 14px;
+        margin-top: 10px;
+        display: block;
+      }
+      @media (max-width: 980px) {
+        .layout { grid-template-columns: 1fr; }
+        .topbar { flex-direction: column; }
+        canvas, .empty { height: 480px; min-height: 480px; }
+        .info-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <div>
+          <h1>Song Space Explorer</h1>
+          <p class="subtitle">
+            Experimental 3D view of the song space. Pick a track, then rotate through its local song space and nearby songs.
+          </p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="nav-link" href="/">Recommender</a>
+          <a class="nav-link" href="/stats">Global stats</a>
+        </div>
+      </div>
+
+      <section class="layout">
+        <aside class="panel">
+          <div class="controls">
+            <div class="field-label">Model</div>
+            <select id="model"></select>
+            <div class="field-label">Recommendation Style</div>
+            <select id="space"></select>
+            <div class="helper" id="space-helper"></div>
+            <div id="blend-control">
+              <div class="field-label">Mix vs Stem Blend</div>
+              <input id="blend" type="range" min="0" max="100" value="50" />
+              <div class="helper" id="blend-helper"></div>
+            </div>
+            <div class="range-block">
+              <div class="field-label">Artist Labels</div>
+              <input id="artist-label-count" type="range" min="0" max="25" value="8" />
+              <div class="helper" id="artist-label-helper">Showing 8 artist labels from the most represented artists in view.</div>
+            </div>
+            <div class="range-block">
+              <div class="field-label">Points In View</div>
+              <input id="point-count-slider" type="range" min="1" max="220" value="220" />
+              <div class="helper" id="point-count-helper">Showing 220 projected points.</div>
+            </div>
+            <div class="field-label">Find an Anchor Song</div>
+            <div class="search-row">
+              <input id="search" type="search" placeholder="Search artist, track, or Spotify ID" />
+              <button id="random-song" type="button">Random</button>
+            </div>
+            <div class="helper">Choose a track to anchor the local song space. Without one, the view shows a random global sample.</div>
+          </div>
+          <div id="search-results" class="stack results"></div>
+        </aside>
+
+        <section class="panel scene-card">
+          <div class="info-grid">
+            <div class="stat"><div class="field-label">Anchor</div><div id="anchor-label" class="helper">No anchor selected</div></div>
+            <div class="stat"><div class="field-label">Projected Points</div><div id="point-count" class="helper">0</div></div>
+            <div class="stat">
+              <div class="field-label">View Controls</div>
+              <div class="helper">Drag to pan. Hold Shift while dragging to rotate. Scroll to zoom. Click a point for details.</div>
+              <div class="view-actions">
+                <button id="reset-view" type="button">Reset view</button>
+              </div>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="scene" width="1100" height="640"></canvas>
+            <div id="overlay" class="overlay"></div>
+            <div class="hud">
+              <div class="hud-card legend">
+                <span class="query">Anchor</span>
+                <span class="neighbor">Nearby songs</span>
+                <span class="context">Context sample</span>
+              </div>
+              <div id="selection-card" class="hud-card muted">Click a point to inspect the song.</div>
+            </div>
+            <div id="empty-state" class="empty">Loading song space view...</div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const modelSelect = document.getElementById("model");
+      const spaceSelect = document.getElementById("space");
+      const spaceHelper = document.getElementById("space-helper");
+      const blendControl = document.getElementById("blend-control");
+      const blendInput = document.getElementById("blend");
+      const blendHelper = document.getElementById("blend-helper");
+      const artistLabelInput = document.getElementById("artist-label-count");
+      const artistLabelHelper = document.getElementById("artist-label-helper");
+      const pointCountSlider = document.getElementById("point-count-slider");
+      const pointCountHelper = document.getElementById("point-count-helper");
+      const searchInput = document.getElementById("search");
+      const randomSongButton = document.getElementById("random-song");
+      const searchResultsRoot = document.getElementById("search-results");
+      const anchorLabel = document.getElementById("anchor-label");
+      const pointCount = document.getElementById("point-count");
+      const selectionCard = document.getElementById("selection-card");
+      const emptyState = document.getElementById("empty-state");
+      const canvas = document.getElementById("scene");
+	      const overlay = document.getElementById("overlay");
+      const resetViewButton = document.getElementById("reset-view");
+      const ctx = canvas.getContext("2d");
+
+      let modelsById = new Map();
+      let currentModel = null;
+      let currentSpace = "song";
+      let currentBlend = 0.5;
+      let currentAnchorId = null;
+      let currentAnchorTrack = null;
+      let currentPayload = null;
+      let projectedPoints = [];
+      let maxPointCount = 220;
+      let currentPointCount = 220;
+      let rotationX = -0.55;
+      let rotationY = 0.95;
+      let zoom = 1.0;
+      let panX = 0;
+      let panY = 0;
+	      let dragState = null;
+      let selectedPointId = null;
+      let selectedNeighborIds = new Set();
+      let hoveredPointId = null;
+      let currentArtistLabelCount = 8;
+      let manifoldRequestSeq = 0;
+
+      function resetView() {
+        rotationX = -0.55;
+        rotationY = 0.95;
+        zoom = 1.0;
+        panX = 0;
+        panY = 0;
+        drawScene();
+      }
+
+      async function getJson(url) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+        return response.json();
+      }
+
+      function modelQuery() {
+        return currentModel ? `model=${encodeURIComponent(currentModel)}` : "";
+      }
+
+      function spaceLabel(space) {
+        const labels = { song: "Whole song", mix: "Mix only", stem: "Stem only", blend: "Mix + stem blend" };
+        return labels[space] || space;
+      }
+
+      function spaceDescription(space) {
+        const descriptions = {
+          song: "Uses the model's main embedding space.",
+          mix: "Projects the full-mix audio space.",
+          stem: "Projects the stem-aware space.",
+          blend: "Interpolates between mix and stem before projection.",
+        };
+        return descriptions[space] || "";
+      }
+
+      function updateSpaceSelector() {
+        const model = modelsById.get(currentModel);
+        const spaces = (model && model.spaces && model.spaces.length) ? model.spaces : ["song"];
+        if (!spaces.includes(currentSpace)) currentSpace = spaces[0];
+        spaceSelect.innerHTML = spaces.map((space) => `<option value="${space}">${spaceLabel(space)}</option>`).join("");
+        spaceSelect.value = currentSpace;
+        spaceSelect.disabled = spaces.length <= 1;
+        spaceHelper.textContent = spaceDescription(currentSpace);
+        blendControl.style.display = currentSpace === "blend" ? "block" : "none";
+        blendHelper.textContent = `Current blend: ${Math.round(currentBlend * 100)}% toward stem structure.`;
+      }
+
+      function updateModels(models) {
+        modelsById = new Map(models.map((model) => [model.model_id, model]));
+        modelSelect.innerHTML = models
+          .filter((model) => model.available)
+          .map((model) => `<option value="${model.model_id}">${model.label}</option>`)
+          .join("");
+        if (!currentModel && models.length) currentModel = models.find((model) => model.available)?.model_id || null;
+        modelSelect.value = currentModel;
+        updateSpaceSelector();
+      }
+
+      function updatePointSlider(maxTracks) {
+        maxPointCount = Math.max(1, maxTracks || 1);
+        pointCountSlider.max = String(maxPointCount);
+        if (currentPointCount > maxPointCount) currentPointCount = maxPointCount;
+        if (currentPointCount < 1) currentPointCount = 1;
+        pointCountSlider.value = String(currentPointCount);
+        pointCountHelper.textContent = `Showing ${currentPointCount} projected point${currentPointCount === 1 ? "" : "s"} out of ${maxPointCount}.`;
+      }
+
+      async function loadModels() {
+        const payload = await getJson("/api/models");
+        updateModels(payload.models || []);
+        updatePointSlider(modelsById.get(currentModel)?.track_count || 220);
+      }
+
+      async function searchSongs(query) {
+        const parts = [`q=${encodeURIComponent(query)}`, `limit=12`];
+        if (currentModel) parts.push(modelQuery());
+        const payload = await getJson(`/api/search?${parts.join("&")}`);
+        renderSearchResults(payload.results || []);
+      }
+
+      function renderSearchResults(results) {
+        if (!results.length) {
+          searchResultsRoot.innerHTML = `<div class="muted">No songs found in this model.</div>`;
+          return;
+        }
+        searchResultsRoot.innerHTML = results.map((track) => `
+          <button class="search-result" data-id="${track.spotify_id}">
+            <strong>${track.name}</strong>
+            <span class="muted">${track.artist || "Metadata unavailable"}</span>
+          </button>
+        `).join("");
+        for (const button of searchResultsRoot.querySelectorAll(".search-result")) {
+          button.addEventListener("click", () => {
+            currentAnchorId = button.dataset.id;
+            loadManifold();
+          });
+        }
+      }
+
+	      function setSelection(point) {
+	        if (!point) {
+	          selectedPointId = null;
+	          selectedNeighborIds = new Set();
+	          selectionCard.innerHTML = `Click a point to inspect the song.`;
+	          overlay.innerHTML = "";
+	          drawScene();
+	          return;
+	        }
+	        selectedPointId = point.spotify_id;
+	        const rankedNeighbors = [...(currentPayload?.points || [])]
+	          .filter((candidate) => candidate.spotify_id !== point.spotify_id)
+	          .map((candidate) => ({
+	            spotify_id: candidate.spotify_id,
+	            distance: Math.hypot(candidate.x - point.x, candidate.y - point.y, candidate.z - point.z),
+	          }))
+	          .sort((a, b) => a.distance - b.distance)
+	          .slice(0, 8);
+	        selectedNeighborIds = new Set(rankedNeighbors.map((row) => row.spotify_id));
+	        selectionCard.innerHTML = `
+	          <strong>${point.name}</strong><br />
+	          <span class="muted">${point.artist || "Metadata unavailable"}</span><br />
+	          <span class="muted">${point.role === "query" ? "Anchor song" : point.role === "neighbor" ? "Nearby song" : "Context song"}</span><br />
+          <button id="use-anchor" data-id="${point.spotify_id}">Use as anchor</button>
+          <iframe
+            src="${point.spotify_embed_url}"
+            loading="lazy"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+          </iframe>
+        `;
+        const useAnchor = document.getElementById("use-anchor");
+	        if (useAnchor) {
+	          useAnchor.addEventListener("click", () => {
+	            currentAnchorId = point.spotify_id;
+	            loadManifold();
+	          });
+	        }
+	        drawScene();
+	      }
+
+      function rotatePoint(point) {
+        const cosY = Math.cos(rotationY);
+        const sinY = Math.sin(rotationY);
+        const cosX = Math.cos(rotationX);
+        const sinX = Math.sin(rotationX);
+        const x1 = point.x * cosY - point.z * sinY;
+        const z1 = point.x * sinY + point.z * cosY;
+        const y2 = point.y * cosX - z1 * sinX;
+        const z2 = point.y * sinX + z1 * cosX;
+        return { x: x1, y: y2, z: z2 };
+      }
+
+	      function projectPoints(points) {
+	        const width = canvas.width;
+	        const height = canvas.height;
+	        const scale = Math.min(width, height) * 0.28 * zoom;
+	        return points.map((point) => {
+          const rotated = rotatePoint(point);
+          const depth = (rotated.z + 2.7) / 3.6;
+          const perspective = 0.74 + depth * 0.85;
+          const sx = width / 2 + panX + rotated.x * scale * perspective;
+          const sy = height / 2 + panY + rotated.y * scale * perspective;
+	          const baseRadius = point.role === "query" ? 8 : point.role === "neighbor" ? 5.8 : 3.5;
+	          const radius = baseRadius * (0.85 + zoom * 0.45);
+	          return { ...point, sx, sy, depth, radius };
+	        }).sort((a, b) => a.depth - b.depth);
+	      }
+
+	      function pointColor(role) {
+	        if (role === "query") return "#7ee787";
+	        if (role === "neighbor") return "#6cb6ff";
+	        return "rgba(148, 163, 184, 0.72)";
+	      }
+
+      function artistLabelSummary(count) {
+        if (count === 0) return "Artist labels hidden.";
+        if (count === 1) return "Showing 1 artist label from the most represented artists in view.";
+        return `Showing ${count} artist labels from the most represented artists in view.`;
+      }
+
+      function computeArtistLabels() {
+        if (!currentArtistLabelCount) return [];
+        const grouped = new Map();
+        for (const point of projectedPoints) {
+          const artist = (point.artist || "").trim();
+          if (!artist || artist === "Metadata unavailable") continue;
+          const key = artist.toLowerCase();
+          if (!grouped.has(key)) grouped.set(key, { artist, points: [] });
+          grouped.get(key).points.push(point);
+        }
+
+        const candidates = Array.from(grouped.values())
+          .filter((group) => group.points.length >= 2 || group.points.some((point) => point.role === "query"))
+          .map((group) => {
+            const cx = group.points.reduce((sum, point) => sum + point.sx, 0) / group.points.length;
+            const cy = group.points.reduce((sum, point) => sum + point.sy, 0) / group.points.length;
+            let representative = group.points[0];
+            let best = Number.POSITIVE_INFINITY;
+            for (const point of group.points) {
+              const distance = Math.hypot(point.sx - cx, point.sy - cy);
+              if (distance < best) {
+                best = distance;
+                representative = point;
+              }
+            }
+            return {
+              artist: group.artist,
+              count: group.points.length,
+              x: representative.sx + 10,
+              y: representative.sy - 10,
+              priority: group.points.some((point) => point.role === "query") ? 1000 : group.points.length,
+            };
+          })
+          .sort((a, b) => b.priority - a.priority || a.artist.localeCompare(b.artist))
+          .slice(0, currentArtistLabelCount * 2);
+
+        const placed = [];
+        const visible = [];
+        for (const candidate of candidates) {
+          if (visible.length >= currentArtistLabelCount) break;
+          const box = {
+            left: candidate.x - 2,
+            right: candidate.x + Math.max(48, candidate.artist.length * 7.2),
+            top: candidate.y - 12,
+            bottom: candidate.y + 4,
+          };
+          const overlaps = placed.some((item) =>
+            !(box.right < item.left || box.left > item.right || box.bottom < item.top || box.top > item.bottom)
+          );
+          if (overlaps) continue;
+          placed.push(box);
+          visible.push(candidate);
+        }
+        return visible;
+      }
+
+	      function renderHover(point) {
+	        if (!point) {
+	          overlay.innerHTML = "";
+	          return;
+	        }
+	        overlay.innerHTML = `
+	          <div class="hover-label" style="left:${point.sx}px; top:${point.sy}px;">
+	            ${point.name}
+	          </div>
+	        `;
+	      }
+
+	      function drawScene() {
+	        ctx.clearRect(0, 0, canvas.width, canvas.height);
+	        if (!currentPayload || !currentPayload.points || !currentPayload.points.length) {
+	          emptyState.style.display = "grid";
+	          overlay.innerHTML = "";
+	          return;
+	        }
+	        emptyState.style.display = "none";
+	        projectedPoints = projectPoints(currentPayload.points);
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(108, 182, 255, 0.08)";
+        ctx.lineWidth = 1;
+        for (let x = 120; x < canvas.width; x += 120) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = 120; y < canvas.height; y += 120) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+	        for (const point of projectedPoints) {
+	          const isSelected = selectedPointId === point.spotify_id;
+	          const isSelectedNeighbor = selectedNeighborIds.has(point.spotify_id);
+	          if (isSelectedNeighbor && !isSelected) {
+	            ctx.beginPath();
+	            ctx.fillStyle = "rgba(108, 182, 255, 0.18)";
+	            ctx.globalAlpha = 1;
+	            ctx.arc(point.sx, point.sy, point.radius + 4.5, 0, Math.PI * 2);
+	            ctx.fill();
+	          }
+
+	          ctx.beginPath();
+	          ctx.fillStyle = isSelected ? "#1f6feb" : isSelectedNeighbor ? "#8fd0ff" : pointColor(point.role);
+	          ctx.globalAlpha = isSelected ? 1 : point.role === "context" ? 0.72 : 0.96;
+	          ctx.arc(point.sx, point.sy, isSelected ? point.radius + 2.2 : isSelectedNeighbor ? point.radius + 0.9 : point.radius, 0, Math.PI * 2);
+	          ctx.fill();
+	          if (isSelected) {
+	            ctx.strokeStyle = "rgba(230, 237, 243, 0.95)";
+	            ctx.lineWidth = 1.8;
+	            ctx.stroke();
+	          } else if (isSelectedNeighbor) {
+	            ctx.strokeStyle = "rgba(230, 237, 243, 0.35)";
+	            ctx.lineWidth = 1.1;
+	            ctx.stroke();
+	          }
+	        }
+        ctx.globalAlpha = 1;
+
+        const artistLabels = computeArtistLabels();
+	        if (artistLabels.length) {
+          ctx.save();
+          ctx.font = "12px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          ctx.textBaseline = "middle";
+          for (const label of artistLabels) {
+            const width = Math.max(48, ctx.measureText(label.artist).width + 10);
+            ctx.fillStyle = "rgba(12, 23, 33, 0.9)";
+            ctx.strokeStyle = "rgba(108, 182, 255, 0.2)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(label.x - 4, label.y - 11, width, 18, 8);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = "#c9d8e8";
+            ctx.fillText(label.artist, label.x + 2, label.y);
+          }
+	          ctx.restore();
+	        }
+	        renderHover(projectedPoints.find((point) => point.spotify_id === hoveredPointId) || null);
+	      }
+
+      function pickPoint(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (clientX - rect.left) * scaleX;
+        const y = (clientY - rect.top) * scaleY;
+        let winner = null;
+        let best = 18;
+        for (const point of projectedPoints) {
+          const distance = Math.hypot(point.sx - x, point.sy - y);
+          if (distance < point.radius + 8 && distance < best) {
+            best = distance;
+            winner = point;
+          }
+        }
+        return winner;
+      }
+
+      async function loadRandomAnchor() {
+        const parts = [`limit=1`];
+        if (currentModel) parts.push(modelQuery());
+        const payload = await getJson(`/api/random?${parts.join("&")}`);
+        currentAnchorId = payload.results?.[0]?.spotify_id || null;
+        await loadManifold();
+      }
+
+      async function loadManifold() {
+        const requestSeq = ++manifoldRequestSeq;
+        const parts = [
+          `sample_limit=${encodeURIComponent(currentPointCount)}`,
+          `neighbor_limit=24`,
+          `blend=${encodeURIComponent(currentBlend.toFixed(2))}`,
+        ];
+        if (currentModel) parts.push(modelQuery());
+        if (currentSpace) parts.push(`space=${encodeURIComponent(currentSpace)}`);
+        if (currentAnchorId) parts.push(`spotify_id=${encodeURIComponent(currentAnchorId)}`);
+        const payload = await getJson(`/api/manifold?${parts.join("&")}`);
+        if (requestSeq !== manifoldRequestSeq) return;
+        currentPayload = payload;
+        currentAnchorTrack = payload.query;
+        anchorLabel.textContent = payload.query ? `${payload.query.name} by ${payload.query.artist}` : "Random global sample";
+        pointCount.textContent = `${payload.counts.total} points`;
+        setSelection(payload.query || null);
+        drawScene();
+      }
+
+      async function initialize() {
+        await loadModels();
+        await loadManifold();
+      }
+
+      modelSelect.addEventListener("change", async () => {
+        currentModel = modelSelect.value;
+        updateSpaceSelector();
+        updatePointSlider(modelsById.get(currentModel)?.track_count || 220);
+        await searchSongs(searchInput.value.trim());
+        await loadManifold();
+      });
+
+      spaceSelect.addEventListener("change", async () => {
+        currentSpace = spaceSelect.value;
+        updateSpaceSelector();
+        await loadManifold();
+      });
+
+      blendInput.addEventListener("input", async () => {
+        currentBlend = Number(blendInput.value) / 100;
+        blendHelper.textContent = `Current blend: ${Math.round(currentBlend * 100)}% toward stem structure.`;
+        if (currentSpace === "blend") {
+          await loadManifold();
+        }
+      });
+
+      artistLabelInput.addEventListener("input", () => {
+        currentArtistLabelCount = Number(artistLabelInput.value);
+        artistLabelHelper.textContent = artistLabelSummary(currentArtistLabelCount);
+        drawScene();
+      });
+
+      pointCountSlider.addEventListener("input", async () => {
+        currentPointCount = Number(pointCountSlider.value);
+        pointCountHelper.textContent = `Showing ${currentPointCount} projected point${currentPointCount === 1 ? "" : "s"} out of ${maxPointCount}.`;
+        await loadManifold();
+      });
+
+      searchInput.addEventListener("input", async () => {
+        const query = searchInput.value.trim();
+        if (!query) {
+          searchResultsRoot.innerHTML = "";
+          return;
+        }
+        await searchSongs(query);
+      });
+
+      randomSongButton.addEventListener("click", loadRandomAnchor);
+
+      canvas.addEventListener("mousedown", (event) => {
+        dragState = {
+          x: event.clientX,
+          y: event.clientY,
+          moved: false,
+          mode: event.shiftKey ? "rotate" : "pan",
+        };
+        canvas.classList.add("dragging");
+      });
+
+      window.addEventListener("mousemove", (event) => {
+        if (!dragState) return;
+        const dx = event.clientX - dragState.x;
+        const dy = event.clientY - dragState.y;
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragState.moved = true;
+        dragState.x = event.clientX;
+        dragState.y = event.clientY;
+        const mode = event.shiftKey ? "rotate" : "pan";
+        dragState.mode = mode;
+        if (mode === "rotate") {
+          rotationY += dx * 0.008;
+          rotationX += dy * 0.008;
+          rotationX = Math.max(-1.4, Math.min(1.4, rotationX));
+        } else {
+          panX += dx * (canvas.width / canvas.getBoundingClientRect().width);
+          panY += dy * (canvas.height / canvas.getBoundingClientRect().height);
+        }
+        drawScene();
+      });
+
+      window.addEventListener("mouseup", () => {
+        dragState = null;
+        canvas.classList.remove("dragging");
+      });
+
+	      canvas.addEventListener("click", (event) => {
+	        if (dragState && dragState.moved) return;
+	        const point = pickPoint(event.clientX, event.clientY);
+	        if (!point) {
+	          setSelection(null);
+          return;
+        }
+	        if (selectedPointId === point.spotify_id) {
+	          return;
+	        }
+	        setSelection(point);
+	      });
+
+	      canvas.addEventListener("mousemove", (event) => {
+	        if (dragState) return;
+	        const point = pickPoint(event.clientX, event.clientY);
+	        const nextHoveredId = point?.spotify_id || null;
+	        if (nextHoveredId === hoveredPointId) return;
+	        hoveredPointId = nextHoveredId;
+	        drawScene();
+	      });
+
+	      canvas.addEventListener("mouseleave", () => {
+	        hoveredPointId = null;
+	        overlay.innerHTML = "";
+	      });
+
+      canvas.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const focusX = (event.clientX - rect.left) * scaleX;
+        const focusY = (event.clientY - rect.top) * scaleY;
+        const nextZoom = Math.max(0.65, Math.min(8, zoom - event.deltaY * 0.0012));
+        if (Math.abs(nextZoom - zoom) < 1e-6) return;
+        const ratio = nextZoom / zoom;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        panX = (1 - ratio) * (focusX - centerX) + ratio * panX;
+        panY = (1 - ratio) * (focusY - centerY) + ratio * panY;
+        zoom = nextZoom;
+        drawScene();
+      }, { passive: false });
+
+      resetViewButton.addEventListener("click", resetView);
+
+      window.addEventListener("resize", drawScene);
+
+      initialize().catch((error) => {
+        emptyState.textContent = `Could not load the song space explorer: ${error.message}`;
+      });
+
+      artistLabelHelper.textContent = artistLabelSummary(currentArtistLabelCount);
+    </script>
+  </body>
+</html>

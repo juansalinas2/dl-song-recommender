@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Song Space Stats</title>
+    <style>
+      :root {
+        --bg: #091019;
+        --paper: rgba(14, 22, 31, 0.94);
+        --paper-2: rgba(11, 18, 26, 0.88);
+        --text: #e6edf3;
+        --muted: #94a3b8;
+        --accent: #6cb6ff;
+        --line: rgba(230, 237, 243, 0.1);
+        --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      body {
+        margin: 0;
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(108, 182, 255, 0.12), transparent 28%),
+          linear-gradient(180deg, #04080d 0%, var(--bg) 100%);
+      }
+      main {
+        width: min(1240px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 34px 0 56px;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 18px;
+        margin-bottom: 22px;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: clamp(2.4rem, 5vw, 4.4rem);
+        line-height: 0.94;
+      }
+      .subtitle {
+        max-width: 64ch;
+        color: var(--muted);
+        line-height: 1.6;
+        margin: 0;
+      }
+      .navs {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .nav-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 14px;
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid var(--line);
+        background: rgba(9, 16, 25, 0.88);
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: 20px;
+      }
+      .panel {
+        background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        padding: 20px;
+        box-shadow: var(--shadow);
+        min-width: 0;
+      }
+      .layout > *,
+      .topbar > *,
+      .cards > *,
+      .kpi-grid > *,
+      .list > *,
+      .panel > * {
+        min-width: 0;
+      }
+      .panel,
+      .card,
+      .kpi,
+      .row,
+      .subtitle,
+      .helper,
+      .muted,
+      h1,
+      h2,
+      h3,
+      p,
+      span,
+      strong,
+      a {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      .controls, .grid, .cards, .kpi-grid, .list { display: grid; gap: 12px; }
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .field-label {
+        font-size: 0.78rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      select, input {
+        width: 100%;
+        padding: 14px 16px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        font: inherit;
+        color: var(--text);
+        background: rgba(8, 14, 22, 0.88);
+      }
+      input[type="range"] {
+        padding: 0;
+        border: 0;
+        accent-color: var(--accent);
+        background: transparent;
+      }
+      .helper, .muted {
+        color: var(--muted);
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+      .card, .kpi, .row {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 14px;
+        background: rgba(8, 14, 22, 0.5);
+      }
+      .card h2 {
+        margin: 0 0 8px;
+        font-size: 1rem;
+      }
+      .score {
+        color: var(--accent);
+        font-size: 0.82rem;
+      }
+      @media (max-width: 980px) {
+        .layout, .cards, .kpi-grid { grid-template-columns: 1fr; }
+        .topbar { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="topbar">
+        <div>
+          <h1>Song Space Stats</h1>
+          <p class="subtitle">Global summaries for the current embedding space: nearest pairs, central songs, and likely outliers.</p>
+        </div>
+        <div class="navs">
+          <a class="nav-link" href="/">Recommender</a>
+          <a class="nav-link" href="/manifold">Song space</a>
+        </div>
+      </div>
+      <section class="layout">
+        <aside class="panel">
+          <div class="controls">
+            <div class="field-label">Model</div>
+            <select id="model"></select>
+            <div class="field-label">Recommendation Style</div>
+            <select id="space"></select>
+            <div class="helper" id="space-helper"></div>
+            <div id="blend-control">
+              <div class="field-label">Mix vs Stem Blend</div>
+              <input id="blend" type="range" min="0" max="100" value="50" />
+              <div class="helper" id="blend-helper"></div>
+            </div>
+            <div class="helper">These stats come directly from the selected embedding space.</div>
+          </div>
+        </aside>
+        <section class="grid">
+          <div class="kpi-grid">
+            <div class="kpi"><div class="field-label">Tracks</div><div id="tracks-count">-</div></div>
+            <div class="kpi"><div class="field-label">Closest Pair Distance</div><div id="closest-distance">-</div></div>
+          </div>
+          <div class="cards">
+            <div class="card">
+              <h2>Closest Songs</h2>
+              <div class="helper">Pairs with the highest cosine similarity.</div>
+              <div id="closest-pairs" class="list"></div>
+            </div>
+            <div class="card">
+              <h2>Central Songs</h2>
+              <div class="helper">Songs with the strongest local neighborhood.</div>
+              <div id="central-songs" class="list"></div>
+            </div>
+            <div class="card">
+              <h2>Outlier Songs</h2>
+              <div class="helper">Songs furthest from the embedding centroid.</div>
+              <div id="outlier-songs" class="list"></div>
+            </div>
+            <div class="card">
+              <h2>Centroid Songs</h2>
+              <div class="helper">Songs closest to the embedding centroid.</div>
+              <div id="centroid-songs" class="list"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+    <script>
+      const modelSelect = document.getElementById("model");
+      const spaceSelect = document.getElementById("space");
+      const spaceHelper = document.getElementById("space-helper");
+      const blendControl = document.getElementById("blend-control");
+      const blendInput = document.getElementById("blend");
+      const blendHelper = document.getElementById("blend-helper");
+      const tracksCount = document.getElementById("tracks-count");
+      const closestDistance = document.getElementById("closest-distance");
+      const closestPairs = document.getElementById("closest-pairs");
+      const centralSongs = document.getElementById("central-songs");
+      const outlierSongs = document.getElementById("outlier-songs");
+      const centroidSongs = document.getElementById("centroid-songs");
+      let modelsById = new Map();
+      let currentModel = null;
+      let currentSpace = "song";
+      let currentBlend = 0.5;
+
+      async function getJson(url) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+        return response.json();
+      }
+
+      function spaceLabel(space) {
+        const labels = { song: "Whole song", mix: "Mix only", stem: "Stem only", blend: "Mix + stem blend" };
+        return labels[space] || space;
+      }
+
+      function spaceDescription(space) {
+        const descriptions = {
+          song: "Stats over the model's main embedding space.",
+          mix: "Stats over the full-mix representation.",
+          stem: "Stats over the stem-aware representation.",
+          blend: "Stats over the current mix/stem interpolation.",
+        };
+        return descriptions[space] || "";
+      }
+
+      function updateSpaces() {
+        const model = modelsById.get(currentModel);
+        const spaces = (model && model.spaces && model.spaces.length) ? model.spaces : ["song"];
+        if (!spaces.includes(currentSpace)) currentSpace = spaces[0];
+        spaceSelect.innerHTML = spaces.map((space) => `<option value="${space}">${spaceLabel(space)}</option>`).join("");
+        spaceSelect.value = currentSpace;
+        spaceHelper.textContent = spaceDescription(currentSpace);
+        blendControl.style.display = currentSpace === "blend" ? "block" : "none";
+        blendHelper.textContent = `Current blend: ${Math.round(currentBlend * 100)}% toward stem structure.`;
+      }
+
+      function renderSongList(root, songs, scoreKey, label) {
+        root.innerHTML = songs.map((song) => `
+          <div class="row">
+            <strong>${song.name}</strong><br />
+            <span class="muted">${song.artist || "Metadata unavailable"}</span><br />
+            <span class="score">${label}: ${Number(song[scoreKey]).toFixed(4)}</span>
+          </div>
+        `).join("");
+      }
+
+      function renderPairs(pairs) {
+        closestPairs.innerHTML = pairs.map((pair) => `
+          <div class="row">
+            <strong>${pair.track_a.name}</strong> <span class="muted">by ${pair.track_a.artist || "Metadata unavailable"}</span><br />
+            <strong>${pair.track_b.name}</strong> <span class="muted">by ${pair.track_b.artist || "Metadata unavailable"}</span><br />
+            <span class="score">similarity ${Number(pair.similarity).toFixed(4)} | distance ${Number(pair.distance).toFixed(4)}</span>
+          </div>
+        `).join("");
+      }
+
+      async function loadStats() {
+        const parts = [`pair_limit=10`, `song_limit=10`, `blend=${encodeURIComponent(currentBlend.toFixed(2))}`];
+        if (currentModel) parts.push(`model=${encodeURIComponent(currentModel)}`);
+        if (currentSpace) parts.push(`space=${encodeURIComponent(currentSpace)}`);
+        const payload = await getJson(`/api/global-stats?${parts.join("&")}`);
+        tracksCount.textContent = payload.counts.tracks;
+        closestDistance.textContent = payload.closest_pairs.length ? Number(payload.closest_pairs[0].distance).toFixed(4) : "-";
+        renderPairs(payload.closest_pairs || []);
+        renderSongList(centralSongs, payload.central_songs || [], "neighbor_score", "neighbor score");
+        renderSongList(outlierSongs, payload.outlier_songs || [], "centroid_similarity", "centroid similarity");
+        renderSongList(centroidSongs, payload.centroid_songs || [], "centroid_similarity", "centroid similarity");
+      }
+
+      async function initialize() {
+        const payload = await getJson("/api/models");
+        const models = payload.models || [];
+        modelsById = new Map(models.map((model) => [model.model_id, model]));
+        modelSelect.innerHTML = models.filter((model) => model.available).map((model) => `<option value="${model.model_id}">${model.label}</option>`).join("");
+        currentModel = models.find((model) => model.available)?.model_id || null;
+        if (currentModel) modelSelect.value = currentModel;
+        updateSpaces();
+        await loadStats();
+      }
+
+      modelSelect.addEventListener("change", async () => {
+        currentModel = modelSelect.value;
+        updateSpaces();
+        await loadStats();
+      });
+
+      spaceSelect.addEventListener("change", async () => {
+        currentSpace = spaceSelect.value;
+        updateSpaces();
+        await loadStats();
+      });
+
+      blendInput.addEventListener("input", async () => {
+        currentBlend = Number(blendInput.value) / 100;
+        blendHelper.textContent = `Current blend: ${Math.round(currentBlend * 100)}% toward stem structure.`;
+        if (currentSpace === "blend") await loadStats();
+      });
+
+      initialize().catch((error) => {
+        closestPairs.innerHTML = `<div class="row">Could not load stats: ${error.message}</div>`;
+      });
+    </script>
+  </body>
+</html>
