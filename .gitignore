@@ -94,3 +94,5 @@ ENV/
 .coverage
 htmlcov/
 .pytest_cache/
+
+!data/processed/model_runs/final_embeddings_train_validation/**/*.npz

@@ -1,0 +1,59 @@
+{
+  "run_label": "05_Resnet18_contrastive_tags_infonce",
+  "combined_name": "train_validation",
+  "included_splits": [
+    "train",
+    "validation"
+  ],
+  "source_run_dir": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\05_Resnet18_contrastive_tags_infonce",
+  "checkpoint_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\05_Resnet18_contrastive_tags_infonce\\checkpoint.pt",
+  "output_dir": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\final_embeddings_train_validation\\05_Resnet18_contrastive_tags_infonce",
+  "metadata_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\final_embeddings_train_validation\\05_Resnet18_contrastive_tags_infonce\\metadata.parquet",
+  "embeddings_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\final_embeddings_train_validation\\05_Resnet18_contrastive_tags_infonce\\embeddings.npz",
+  "num_rows": 9549,
+  "embedding_dim": 64,
+  "device": "cuda",
+  "model_init_kwargs": {
+    "embedding_dim": 64,
+    "projection_dim": 128,
+    "pretrained": false,
+    "imagenet_input_norm": true,
+    "fusion_alpha_init": 0.75,
+    "drum_alpha_init": 0.2,
+    "num_stems": 4,
+    "stem_dropout_prob": 0.08,
+    "harmonic_indices": [
+      0,
+      2,
+      3
+    ],
+    "drum_index": 1
+  },
+  "source_run_manifest": {
+    "saved_at": "2026-03-13T16:46:35",
+    "experiment_name": "05_Resnet18_contrastive_tags_infonce",
+    "reference_note": "Fused song embedding trained so audio similarity matches frozen notebook 2 tag-set similarity, with light audio view regularization.",
+    "run_label": "05_Resnet18_contrastive_tags_infonce",
+    "checkpoint_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\05_Resnet18_contrastive_tags_infonce\\checkpoint.pt",
+    "embeddings_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\05_Resnet18_contrastive_tags_infonce\\embeddings.npz",
+    "test_split_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\test.parquet",
+    "num_saved_tracks": 1690,
+    "metrics": [
+      {
+        "metric": "artist_hit@10",
+        "value": 0.1408284023668639,
+        "queries": 1690
+      },
+      {
+        "metric": "tag_overlap_hit@10",
+        "value": 0.9487790351399643,
+        "queries": 1679
+      },
+      {
+        "metric": "semantic_teacher_coverage",
+        "value": 0.993491124260355,
+        "queries": 1690
+      }
+    ]
+  }
+}

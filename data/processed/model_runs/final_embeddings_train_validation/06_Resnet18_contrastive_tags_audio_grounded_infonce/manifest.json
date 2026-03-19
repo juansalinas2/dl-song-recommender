@@ -1,0 +1,59 @@
+{
+  "run_label": "06_Resnet18_contrastive_tags_audio_grounded_infonce",
+  "combined_name": "train_validation",
+  "included_splits": [
+    "train",
+    "validation"
+  ],
+  "source_run_dir": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\06_Resnet18_contrastive_tags_audio_grounded_infonce",
+  "checkpoint_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\06_Resnet18_contrastive_tags_audio_grounded_infonce\\checkpoint.pt",
+  "output_dir": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\final_embeddings_train_validation\\06_Resnet18_contrastive_tags_audio_grounded_infonce",
+  "metadata_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\final_embeddings_train_validation\\06_Resnet18_contrastive_tags_audio_grounded_infonce\\metadata.parquet",
+  "embeddings_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\final_embeddings_train_validation\\06_Resnet18_contrastive_tags_audio_grounded_infonce\\embeddings.npz",
+  "num_rows": 9549,
+  "embedding_dim": 64,
+  "device": "cuda",
+  "model_init_kwargs": {
+    "embedding_dim": 64,
+    "projection_dim": 128,
+    "pretrained": false,
+    "imagenet_input_norm": true,
+    "fusion_alpha_init": 0.75,
+    "drum_alpha_init": 0.2,
+    "num_stems": 4,
+    "stem_dropout_prob": 0.05,
+    "harmonic_indices": [
+      0,
+      2,
+      3
+    ],
+    "drum_index": 1
+  },
+  "source_run_manifest": {
+    "saved_at": "2026-03-14T14:57:18",
+    "experiment_name": "06_Resnet18_contrastive_tags_audio_grounded_infonce",
+    "reference_note": "Fused song embedding trained so audio similarity matches frozen notebook 2 tag-set similarity, with light audio view regularization.",
+    "run_label": "06_Resnet18_contrastive_tags_infonce_val",
+    "checkpoint_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\06_Resnet18_contrastive_tags_infonce_val\\checkpoint.pt",
+    "embeddings_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\06_Resnet18_contrastive_tags_infonce_val\\embeddings.npz",
+    "validation_split_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\val.parquet",
+    "num_saved_tracks": 1447,
+    "metrics": [
+      {
+        "metric": "artist_hit@10",
+        "value": 0.11402902557014513,
+        "queries": 1447
+      },
+      {
+        "metric": "tag_overlap_hit@10",
+        "value": 0.9485396383866481,
+        "queries": 1438
+      },
+      {
+        "metric": "semantic_teacher_coverage",
+        "value": 0.9937802349689012,
+        "queries": 1447
+      }
+    ]
+  }
+}

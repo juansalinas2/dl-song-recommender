@@ -1,0 +1,59 @@
+{
+  "run_label": "04_Resnet18_contrastive_tags",
+  "combined_name": "train_validation",
+  "included_splits": [
+    "train",
+    "validation"
+  ],
+  "source_run_dir": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\04_Resnet18_contrastive_tags",
+  "checkpoint_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\04_Resnet18_contrastive_tags\\checkpoint.pt",
+  "output_dir": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\final_embeddings_train_validation\\04_Resnet18_contrastive_tags",
+  "metadata_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\final_embeddings_train_validation\\04_Resnet18_contrastive_tags\\metadata.parquet",
+  "embeddings_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\final_embeddings_train_validation\\04_Resnet18_contrastive_tags\\embeddings.npz",
+  "num_rows": 9549,
+  "embedding_dim": 64,
+  "device": "cuda",
+  "model_init_kwargs": {
+    "embedding_dim": 64,
+    "projection_dim": 64,
+    "pretrained": false,
+    "imagenet_input_norm": true,
+    "fusion_alpha_init": 0.75,
+    "drum_alpha_init": 0.2,
+    "num_stems": 4,
+    "stem_dropout_prob": 0.12,
+    "harmonic_indices": [
+      0,
+      2,
+      3
+    ],
+    "drum_index": 1
+  },
+  "source_run_manifest": {
+    "saved_at": "2026-03-13T16:53:35",
+    "experiment_name": "04_Resnet18_contrastive_tags",
+    "reference_note": "Fused song embedding trained so audio similarity matches frozen notebook 2 tag-set similarity, with light audio view regularization.",
+    "run_label": "04_Resnet18_contrastive_tags",
+    "checkpoint_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\04_Resnet18_contrastive_tags\\checkpoint.pt",
+    "embeddings_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\04_Resnet18_contrastive_tags\\embeddings.npz",
+    "val_split_path": "C:\\Users\\Juan\\Documents\\GitHub\\dl-song-recommender\\data\\processed\\val.parquet",
+    "num_saved_tracks": 1447,
+    "metrics": [
+      {
+        "metric": "artist_hit@10",
+        "value": 0.11817553559087768,
+        "queries": 1447
+      },
+      {
+        "metric": "tag_overlap_hit@10",
+        "value": 0.9436717663421419,
+        "queries": 1438
+      },
+      {
+        "metric": "semantic_teacher_coverage",
+        "value": 0.9937802349689012,
+        "queries": 1447
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "saved_at": "2026-03-15T11:41:13",
+  "experiment_name": "04a_Resnet18_contrastive_tags_BEEG",
+  "reference_note": "Fused song embedding trained so audio similarity matches frozen notebook 2 tag-set similarity, with light audio view regularization.",
+  "run_label": "04a_Resnet18_contrastive_tags_BEEG",
+  "checkpoint_path": "C:\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\04a_Resnet18_contrastive_tags_BEEG\\checkpoint.pt",
+  "embeddings_path": "C:\\GitHub\\dl-song-recommender\\data\\processed\\model_runs\\04a_Resnet18_contrastive_tags_BEEG\\embeddings.npz",
+  "val_split_path": "C:\\GitHub\\dl-song-recommender\\data\\processed\\val.parquet",
+  "num_saved_tracks": 1447,
+  "metrics": [
+    {
+      "metric": "artist_hit@10",
+      "value": 0.11126468555632343,
+      "queries": 1447
+    },
+    {
+      "metric": "tag_overlap_hit@10",
+      "value": 0.9464534075104312,
+      "queries": 1438
+    },
+    {
+      "metric": "semantic_teacher_coverage",
+      "value": 0.9937802349689012,
+      "queries": 1447
+    }
+  ]
+}
