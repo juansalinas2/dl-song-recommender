@@ -30,6 +30,7 @@
       }
       body {
         margin: 0;
+        overscroll-behavior-x: none;
         font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         color: var(--text);
         background:
@@ -41,7 +42,7 @@
       main {
         width: min(1140px, calc(100% - 32px));
         margin: 0 auto;
-        padding: 48px 0 72px;
+        padding: 48px 0 calc(72px + env(safe-area-inset-bottom, 0px));
       }
       h1 {
         font-size: clamp(3rem, 6vw, 5.25rem);
@@ -70,6 +71,12 @@
       }
       .hero-copy {
         min-width: 0;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
       }
       .hero-link {
         display: inline-flex;
@@ -462,6 +469,7 @@
         cursor: grab;
         user-select: none;
         -webkit-user-select: none;
+        touch-action: pan-y;
       }
       .map-svg.dragging {
         cursor: grabbing;
@@ -837,11 +845,175 @@
         overflow-wrap: anywhere;
       }
       @media (max-width: 900px) {
+        main {
+          width: min(100% - 24px, 1000px);
+          padding: 28px 0 48px;
+        }
+        h1 {
+          font-size: clamp(2.4rem, 10vw, 4rem);
+          line-height: 0.94;
+          margin-bottom: 10px;
+        }
+        .subtitle {
+          margin-bottom: 22px;
+        }
         .hero-row {
           flex-direction: column;
+          gap: 14px;
+        }
+        .hero-actions {
+          width: 100%;
+          justify-content: flex-start;
         }
         .layout {
           grid-template-columns: 1fr;
+          gap: 18px;
+        }
+        .panel {
+          padding: 20px;
+        }
+        .toolbar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .toolbar > div:last-child {
+          width: 100%;
+        }
+        .toolbar > div:last-child button {
+          width: 100%;
+        }
+        .card-head {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .search-row {
+          grid-template-columns: 1fr;
+        }
+        .search-row button {
+          width: 100%;
+          white-space: normal;
+        }
+        .map-popup {
+          width: min(360px, calc(100% - 24px));
+        }
+      }
+      @media (max-width: 640px) {
+        main {
+          width: calc(100% - 20px);
+          padding: 20px 0 calc(36px + env(safe-area-inset-bottom, 0px));
+        }
+        .panel {
+          padding: 16px;
+          border-radius: 20px;
+        }
+        .hero-actions {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+        .mode-nav,
+        .hero-link,
+        .search-mode-nav {
+          width: 100%;
+        }
+        .mode-nav {
+          justify-content: space-between;
+        }
+        .mode-nav a {
+          flex: 1 1 0;
+          text-align: center;
+        }
+        .hero-link {
+          justify-content: center;
+        }
+        .search-mode-button {
+          padding: 11px 12px;
+        }
+        .field-label {
+          font-size: 0.7rem;
+        }
+        select,
+        input,
+        button {
+          font-size: 16px;
+        }
+        .card,
+        .search-result,
+        .compare-card,
+        .map-card,
+        .viz-card {
+          padding: 14px;
+        }
+        .card-actions {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+        .action-button {
+          width: 100%;
+          justify-content: center;
+          text-align: center;
+        }
+        .collapse-head {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .tag-search-result {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .tag-search-count {
+          white-space: normal;
+        }
+        .map-svg {
+          height: 250px;
+        }
+        .map-popup {
+          position: static;
+          width: 100%;
+          max-width: none;
+          margin-top: 12px;
+        }
+        .map-popup iframe,
+        iframe {
+          height: 132px;
+        }
+        .insight-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 4px;
+        }
+        .insight-row-value {
+          text-align: left;
+        }
+        .tag-focus-name {
+          font-size: 0.94rem;
+        }
+      }
+      @media (hover: none), (pointer: coarse) {
+        .hero-link,
+        .mode-nav a,
+        .search-mode-button,
+        .search-row button,
+        .action-button,
+        .toolbar button,
+        .load-more-button,
+        .mini-button {
+          min-height: 44px;
+        }
+        button.tag {
+          padding: 5px 9px;
+          min-height: 28px;
+          font-size: 0.66rem;
+        }
+        .load-more-button {
+          width: 46px;
+          height: 46px;
+        }
+        .map-svg {
+          cursor: default;
+        }
+        .map-hover-label {
+          display: none !important;
         }
       }
     </style>
@@ -855,7 +1027,7 @@
             Search a track, switch models, and compare song, mix, or stem-based recommendations in one place.
           </p>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="hero-actions">
           <nav class="mode-nav" aria-label="Mode navigation">
             <a class="active" href="/">Demo</a>
             <a href="/evaluation">Evaluation</a>
@@ -933,6 +1105,7 @@
       const tagResultsRoot = document.getElementById("tag-results");
       const resultsRoot = document.getElementById("results");
       const recommendationsRoot = document.getElementById("recommendations");
+      const isCoarsePointer = window.matchMedia("(hover: none), (pointer: coarse)").matches;
       let modelsById = new Map();
       let currentModel = null;
       let currentSpace = null;
@@ -1108,7 +1281,9 @@
         currentResultsLimit = 7;
         await loadTagResults();
         await loadTracksForActiveTag();
-        resultsRoot.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        if (!isCoarsePointer) {
+          resultsRoot.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
       }
 
       function attachTagClickHandlers(root) {
@@ -1434,8 +1609,10 @@
         const loadMoreButton = document.getElementById("load-more-results");
         if (loadMoreButton) {
           loadMoreButton.addEventListener("click", async () => {
-            currentResultsLimit += 5;
-            await loadResults();
+            await preserveScrollAround(loadMoreButton, async () => {
+              currentResultsLimit += 5;
+              await loadResults();
+            });
           });
         }
       }
@@ -1558,8 +1735,10 @@
         const loadMoreRecommendations = document.getElementById("load-more-recommendations");
         if (loadMoreRecommendations) {
           loadMoreRecommendations.addEventListener("click", async () => {
-            currentRecommendationsLimit += 5;
-            await loadRecommendations(currentQueryId);
+            await preserveScrollAround(loadMoreRecommendations, async () => {
+              currentRecommendationsLimit += 5;
+              await loadRecommendations(currentQueryId);
+            });
           });
         }
         initializeMapPan();
@@ -1588,6 +1767,26 @@
         const hoverLabel = document.getElementById("map-hover-label");
         const mapWrap = document.querySelector(".map-wrap");
         if (!svg || !layer) return;
+
+        const attachPointSelection = () => {
+          for (const point of svg.querySelectorAll(".map-point")) {
+            point.addEventListener("click", (event) => {
+              event.stopPropagation();
+              currentMapPopupId = point.dataset.id;
+              updateNeighborhoodPopupOnly();
+            });
+          }
+          svg.addEventListener("click", (event) => {
+            if (event.target.closest(".map-point")) return;
+            currentMapPopupId = null;
+            updateNeighborhoodPopupOnly();
+          });
+        };
+
+        if (isCoarsePointer) {
+          attachPointSelection();
+          return;
+        }
 
         let dragging = false;
         let startX = 0;
@@ -1872,6 +2071,15 @@
 
       function normalizeClientSearch(value) {
         return String(value ?? "").trim().toLowerCase();
+      }
+
+      async function preserveScrollAround(element, work) {
+        const topBefore = element ? element.getBoundingClientRect().top : null;
+        await work();
+        if (element && topBefore !== null) {
+          const topAfter = element.getBoundingClientRect().top;
+          window.scrollBy(0, topAfter - topBefore);
+        }
       }
 
       async function syncTagModeFromInput() {
