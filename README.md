@@ -28,24 +28,24 @@ The project follows a simple idea:
 
 Genre tags provides the semantic signal during training, but the long-term aim is audio-based recommendation at inference time.
 
-## Model Design 
+## Model Design
 
-The system starts with a tag-based embedding built from listener-provided metadata. This acts as a semantic teacher: a reference signal for which songs should be considered similar.
-
-The later models then learn audio embeddings from spectrograms and stems that try to match that semantic structure directly from audio. The earliest audio model is mainly focused on reproducing tag-defined similarity. Later models add InfoNCE contrastive learning to preserve both semantic similarity and audio consistency. The final model uses a late-fusion architecture trained against a blended teacher that combines tag-based similarity with a frozen audio-similarity baseline, producing a more balanced notion of recommendation quality.
-
+The core model is a late-fusion `ResNet18` trained on spectrograms. Each song is represented by a full-mix spectrogram together with stem spectrograms, and the same encoder is applied across these views to learn a compact audio representation.
 
 ![Model architecture](docs/diagrams/model_1.png)
-<!-- Chat about model 2. -->
 
-At a high level, the architecture is:
+These views are combined into a single retrieval embedding,
 
-- Inputs: spectrograms and stem-based audio views
-- Encoder: ResNet-style audio embedding model
-- Training signal: tag-based semantic teacher, later extended with contrastive and blended objectives
-- Output: fixed-length song embeddings used for nearest-neighbor retrieval
+$$
+z = \mathrm{normalize}(m + \alpha_h h + \alpha_d d),
+$$
 
-For a fuller description of the shared encoder, loss function, and notebook 4-7 progression, see [Model Architecture](docs/model_architecture.md).
+where $m$ is the mix embedding, $h$ is a harmonic embedding formed from bass, other, and vocals, and $d$ is a drum embedding. The learned coefficients $\alpha_h$ and $\alpha_d$ control how strongly those musical components shape the final representation. Recommendation is then performed by nearest-neighbor search in this embedding space.
+
+What changes across notebooks 4-7 is not the backbone so much as the learning objective. The first model uses genre-tag-based learning: genre tags define which songs should be close, and the `ResNet18` is trained to recover that tag-defined geometry from audio alone. Later models add contrastive learning to keep different views of the same song close in embedding space. The final experiment combines both ideas by training against a blended audio-tag teacher.
+
+At a high level, the project studies one stable `ResNet18` architecture under three related training ideas: **tag-based learning**, **contrastive learning**, and **blended audio-tag supervision**. For the full architecture, loss function, and notebook-by-notebook progression, see [Model Architecture](docs/model_architecture.md).
+
 
 ## Experimental Progression 
 
