@@ -28,7 +28,7 @@ where $m$ is the mix embedding, $h$ is the harmonic embedding, and $d$ is the dr
 
 This vector $z$ is the embedding used for cosine nearest-neighbor retrieval. A small projection head is also used during training for contrastive losses, but retrieval always uses the fused song embedding.
 
-![Model architecture](docs/diagrams/model_1.png)
+![Model architecture](../docs/diagrams/model_1.png)
 
 ## Progression at a Glance
 
