@@ -9,6 +9,9 @@ A content-based music recommendation system that learns song similarity from aud
 
 **App Website:** https://dl-song-recommender.onrender.com
 
+## Summary 
+This project builds a content-based music recommender that learns song similarity directly from audio. Using full-mix and stem spectrograms, we trained a late-fusion ResNet18 to generate song embeddings shaped by genre-tag supervision and contrastive learning. The final model powers a web app where users can explore songs and receive recommendations based on learned audio similarity.
+
 ## Why This Matters (Too wordy. Needed?)
 
 Modern music platforms are extremely good at learning from user behavior, but behavior-only recommendation has limits. It struggles with cold-start profiles, sparse interaction data, and explaining similarity based on what songs actually sound like. (I'm lying here, I don't know what modern music platforms do.)
