@@ -4,7 +4,7 @@ To install repo src: inside the repo root on terminal,
 3. Run `pip install -e .`
 
 # Deep Learning Song Recommender
-This project builds a content-based music recommender that learns song similarity directly from audio. Using full-mix and stem spectrograms, we trained a late-fusion ResNet18 to generate song embeddings shaped by genre-tag supervision and contrastive learning. The final model powers a web app where users can explore songs and receive recommendations based on learned audio similarity.
+This project builds a content-based music recommender that learns song similarity directly from audio. Using full-mix and stem spectrograms, we trained a late-fusion `ResNet18` to generate song embeddings shaped by genre-tag supervision and contrastive learning. The final model powers a web app where users can explore songs and receive recommendations based on learned audio similarity.
 
 **App Website:** https://dl-song-recommender.onrender.com
 
@@ -50,8 +50,7 @@ What changes across notebooks 4-7 is not the backbone so much as the learning ob
 
 At a high level, the project studies one stable `ResNet18` architecture under three related training ideas: **tag-based learning**, **contrastive learning**, and **blended audio-tag supervision**. For the full architecture, loss function, and notebook-by-notebook progression, see [Model Architecture](docs/model_architecture.md).
 
-
-## Experimental Progression 
+ 
 
 ## Evaluation
 
