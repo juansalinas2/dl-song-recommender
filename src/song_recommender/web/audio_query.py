@@ -6,8 +6,6 @@ import os
 from pathlib import Path
 import tempfile
 
-from demucs.apply import apply_model
-from demucs.pretrained import get_model
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
 import matplotlib
 import matplotlib.pyplot as plt
@@ -66,6 +64,10 @@ def _resolve_checkpoint_path(spec: ModelSpec) -> Path:
 
 
 def _load_separator():
+    try:
+        from demucs.pretrained import get_model
+    except ImportError as exc:
+        raise FileNotFoundError("Demucs is not installed on this server. Uploaded-audio recommendations are unavailable.") from exc
     model = _SEPARATOR_CACHE.get("htdemucs")
     if model is None:
         model = get_model("htdemucs")
@@ -268,6 +270,10 @@ def _load_clip_audio(path: Path, offset_seconds: float, duration_seconds: float,
 
 
 def _separate_stems(path: Path, offset_seconds: float, duration_seconds: float) -> tuple[np.ndarray, dict[str, np.ndarray]]:
+    try:
+        from demucs.apply import apply_model
+    except ImportError as exc:
+        raise FileNotFoundError("Demucs is not installed on this server. Uploaded-audio recommendations are unavailable.") from exc
     separator = _load_separator()
     sample_rate = int(separator.samplerate)
     audio = _load_clip_audio(path, offset_seconds=offset_seconds, duration_seconds=duration_seconds, sample_rate=sample_rate)
