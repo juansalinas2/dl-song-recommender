@@ -649,7 +649,7 @@
 
       function renderTagRow(track) {
         if (track.tags && track.tags.length) {
-          return `<div class="tag-row">${track.tags.slice(0, 2).map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>`;
+          return `<div class="tag-row">${track.tags.slice(0, 4).map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>`;
         }
         return `<div class="tag-row"><span class="tag">Tags unavailable</span></div>`;
       }
@@ -854,6 +854,7 @@
             <div class="meta-chip">Demo mode</div>
             <strong>${payload.query.name}</strong><br />
             <span class="muted">${payload.query.artist || "Metadata unavailable"}</span><br />
+            ${renderTagRow(payload.query)}
             <a href="${payload.query.spotify_url}" target="_blank" rel="noreferrer">Open in Spotify</a>
             <div class="spotify-id">${payload.query.spotify_id}</div>
             <iframe
@@ -877,6 +878,7 @@
             <div class="card">
               <strong>${track.name}</strong><br />
               <span class="muted">${track.artist || "Metadata unavailable"}</span><br />
+              ${renderTagRow(track)}
               <span class="muted">Cosine similarity: ${track.similarity.toFixed(4)}</span><br />
               <a href="${track.spotify_url}" target="_blank" rel="noreferrer">Open in Spotify</a>
               <div class="spotify-id">${track.spotify_id}</div>
