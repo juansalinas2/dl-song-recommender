@@ -88,9 +88,21 @@ For the full mix and each stem, the project uses `librosa` to compute a [mel spe
 
 Spectrogram magnitudes are converted to decibels normalized relative to the full mix’s maximum power and saved as an 8-bit color-mapped PNG with dimensions **862 × 256**.  
 
-## Feature Engineering
+## Feature Engineering: Tag Embeddings
+
+```mermaid
+graph LR
+    A[Raw tags] --> B[Co-occurrence]
+    B --> C[PMI filtering]
+    C --> D[Valid tag set]
+    D --> E[Word2Vec embeddings]
+    E --> F[Clustering]
+    F --> G[Tag features]
+```
 
 We derive semantic supervision from listener-generated tags in the metadata for our training set. First, we compute tag co-occurrence statistics and filter noisy tag relationships using Positive PMI and minimum co-occurrence thresholds. The resulting clean tag vocabulary is used to train a skip-gram Word2Vec model, producing a 64-dimensional embedding for each valid tag. These tag embeddings are then grouped with hierarchical ward clustering into 20 semantic tag clusters, giving each tag both a dense vector representation and a cluster assignment. For each song, we map its cleaned tags into cluster IDs and compute song-level semantic features such as `tag_clusters` and `dominant_cluster`, which are used in model evaluation. 
+
+For the full details, see [Tag Embeddings and Clustering](docs/tag_embeddings.md).
 
 ## Model Design
 
