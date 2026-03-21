@@ -76,7 +76,7 @@ We construct a weighted graph where
 - edges represent PMI-filtered associations, and
 - edge weights represent PPMI scores.
 
-![Weighted Tag Graph](docs/diagrams/PPMI_graph.png)
+![Weighted Tag Graph](diagrams/PPMI_graph.png)
 
 The result is a semantic network of tags.
 
@@ -104,7 +104,7 @@ We cluster tags into `n_clusters = 20` clusters using `fcluster` to reduce dimen
 - progressive / experimental, and 
 - metal subgenres.
 
-![Top 5 UMAP Clusters](docs/diagrams/tag_clusters_top5.png)
+![Top 5 UMAP Clusters](diagrams/tag_clusters_top5.png)
 
 ## Step 10: Cluster Feature Generation
 
