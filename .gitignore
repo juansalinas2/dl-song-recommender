@@ -1,19 +1,11 @@
 # directories
 artifacts/
 mitch_sandbox/
-models/
+/models/
 checkpoints/
 runs/
 mlruns/
-
-# data
-data/chord
-data/mirex
-data/mpd
-data/msdsl
-data/spec_metadata
-data/spotify_genre
-data/trimmed
+src/song_recommender/models/baselines
 
 # artifacts
 *.wav
@@ -21,6 +13,9 @@ data/trimmed
 *.png
 *.npy
 *.npz
+
+# important
+!data/processed/model_runs/final_embeddings_train_validation/**/*.npz
 
 # from octocat .gitignore
 ######################
@@ -94,5 +89,3 @@ ENV/
 .coverage
 htmlcov/
 .pytest_cache/
-
-!data/processed/model_runs/final_embeddings_train_validation/**/*.npz
