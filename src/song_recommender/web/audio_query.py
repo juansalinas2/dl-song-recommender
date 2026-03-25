@@ -4,19 +4,19 @@ from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
-import tempfile
 
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
 os.environ.setdefault("XDG_CACHE_HOME", "/tmp/.cache")
 os.environ.setdefault("TORCH_HOME", "/tmp/torch")
 import numpy as np
-from PIL import Image
 import soundfile as sf
 import torch
 from torch import nn
 import torch.nn.functional as F
 import torchaudio
 from torchvision.models import resnet18
+from torchvision.transforms import InterpolationMode
+from torchvision.transforms.functional import resize
 import yaml
 
 from song_recommender.web.recommender import ModelSpec, ROOT
@@ -203,26 +203,32 @@ def _load_encoder(spec: ModelSpec) -> LateFusionResnetEncoder:
 
 def _render_spectrogram_image(spec: np.ndarray, config: dict[str, object], image_size: int) -> np.ndarray:
     try:
-        import matplotlib.pyplot as plt
+        from matplotlib import colormaps
     except ImportError as exc:
         raise FileNotFoundError("Matplotlib is not installed on this server. Uploaded-audio recommendations are unavailable.") from exc
     image_cfg = config["image_output"]
-    flipped = np.flipud(np.clip(spec, 0.0, 1.0).astype(np.float32, copy=False))
-    with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as handle:
-        temp_path = Path(handle.name)
-    try:
-        plt.imsave(
-            temp_path,
-            flipped,
-            cmap=str(image_cfg["cmap"]),
-            vmin=float(image_cfg["vmin"]),
-            vmax=float(image_cfg["vmax"]),
-        )
-        image = Image.open(temp_path).convert("L")
-        image = image.resize((image_size, image_size), resample=Image.BILINEAR)
-        return (np.asarray(image, dtype=np.float32) / 255.0).astype(np.float32, copy=False)
-    finally:
-        temp_path.unlink(missing_ok=True)
+    vmin = float(image_cfg["vmin"])
+    vmax = float(image_cfg["vmax"])
+    flipped = np.flipud(np.asarray(spec, dtype=np.float32))
+    clipped = np.clip(flipped, vmin, vmax)
+    scale = max(vmax - vmin, 1e-8)
+    normalized = ((clipped - vmin) / scale).astype(np.float32, copy=False)
+
+    # Training data was saved as an 8-bit colormapped PNG, then reloaded as grayscale.
+    # Recreate that transform in-memory so web startup does not depend on Pillow.
+    cmap = colormaps.get_cmap(str(image_cfg["cmap"]))
+    rgba = cmap(normalized, bytes=True)
+    rgb = rgba[..., :3].astype(np.float32, copy=False)
+    grayscale = np.round(0.299 * rgb[..., 0] + 0.587 * rgb[..., 1] + 0.114 * rgb[..., 2]).astype(np.float32) / 255.0
+
+    image_tensor = torch.from_numpy(grayscale).unsqueeze(0)
+    resized = resize(
+        image_tensor,
+        [image_size, image_size],
+        interpolation=InterpolationMode.BILINEAR,
+        antialias=True,
+    )
+    return resized[0].clamp(0.0, 1.0).cpu().numpy().astype(np.float32, copy=False)
 
 
 def _waveform_to_spectrogram(waveform: np.ndarray, config: dict[str, object], ref_value: float | None = None) -> tuple[np.ndarray, float]:
