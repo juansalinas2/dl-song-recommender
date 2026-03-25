@@ -101,7 +101,7 @@ KNOWN_MODELS: tuple[ModelSpec, ...] = (
     ),
     ModelSpec(
         model_id="baseline",
-        label="Spectrogram similarity baseline (Baseline, experimental)",
+        label="Spectrogram similarity baseline (Baseline, obsolete)",
         path=BASELINE_EMBEDDINGS_PATH,
         embedding_key="embeddings",
         description="Non-neural spectrogram baseline used for reference comparisons.",
@@ -109,7 +109,7 @@ KNOWN_MODELS: tuple[ModelSpec, ...] = (
     ),
     ModelSpec(
         model_id="05_resnet18_contrastive_tags_infonce",
-        label="Contrastive semantic audio encoder (ResNet05, experimental)",
+        label="Contrastive semantic audio encoder (ResNet05, obsolete)",
         path=FINAL_EMBEDDINGS_ROOT / "05_Resnet18_contrastive_tags_infonce" / "embeddings.npz",
         embedding_key="embeddings",
         description="Contrastive audio encoder shaped by semantic tag supervision.",
@@ -117,7 +117,7 @@ KNOWN_MODELS: tuple[ModelSpec, ...] = (
     ),
     ModelSpec(
         model_id="06_resnet18_contrastive_tags_audio_grounded_infonce",
-        label="Audio-grounded contrastive encoder (ResNet06, experimental)",
+        label="Audio-grounded contrastive encoder (ResNet06, obsolete)",
         path=FINAL_EMBEDDINGS_ROOT / "06_Resnet18_contrastive_tags_audio_grounded_infonce" / "embeddings.npz",
         embedding_key="embeddings",
         description="Contrastive encoder with audio-grounded positives for retrieval.",
@@ -125,7 +125,7 @@ KNOWN_MODELS: tuple[ModelSpec, ...] = (
     ),
     ModelSpec(
         model_id="07_resnet18_audio_centric_blended_teacher",
-        label="Blended-teacher late-fusion encoder (ResNet07, experimental)",
+        label="Blended-teacher late-fusion encoder (ResNet07, obsolete)",
         path=FINAL_EMBEDDINGS_ROOT / "07_Resnet18_audio_centric_blended_teacher" / "embeddings.npz",
         embedding_key="embeddings",
         description="Final late-fusion model trained against a blended audio and tag teacher.",
