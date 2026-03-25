@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from song_recommender.web.audio_query import _load_encoder, _load_separator
 from song_recommender.web.evaluation_store import ensure_schema
 from song_recommender.web.recommender import available_models
 
 
 def main() -> None:
     ensure_schema()
+    try:
+        from song_recommender.web.audio_query import _load_encoder, _load_separator
+    except (ImportError, OSError) as exc:
+        detail = f"missing Python package '{exc.name}'" if isinstance(exc, ModuleNotFoundError) and exc.name else str(exc)
+        raise SystemExit(f"render predeploy: uploaded-audio dependencies unavailable: {detail}") from exc
     separator = _load_separator()
     print(f"render predeploy: separator ready at {separator.samplerate} Hz")
 

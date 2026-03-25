@@ -9,7 +9,6 @@ os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
 os.environ.setdefault("XDG_CACHE_HOME", "/tmp/.cache")
 os.environ.setdefault("TORCH_HOME", "/tmp/torch")
 import numpy as np
-import soundfile as sf
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -18,6 +17,11 @@ from torchvision.models import resnet18
 from torchvision.transforms import InterpolationMode
 from torchvision.transforms.functional import resize
 import yaml
+
+try:
+    import soundfile as sf
+except ImportError:
+    sf = None
 
 from song_recommender.web.recommender import ModelSpec, ROOT
 
@@ -258,26 +262,64 @@ def _waveform_to_spectrogram(waveform: np.ndarray, config: dict[str, object], re
 
 
 def _load_clip_audio(path: Path, offset_seconds: float, duration_seconds: float, sample_rate: int) -> np.ndarray:
-    with sf.SoundFile(str(path)) as handle:
-        source_rate = int(handle.samplerate)
-        total_frames = int(handle.frames)
-        start_frame = max(0, int(round(offset_seconds * source_rate)))
-        frame_count = max(1, int(round(duration_seconds * source_rate)))
-        if total_frames < frame_count:
-            clip_seconds = total_frames / max(source_rate, 1)
-            raise ValueError(
-                f"Uploaded clip is too short. Need at least {duration_seconds:.0f} seconds, got {clip_seconds:.2f} seconds."
-            )
-        if start_frame > max(total_frames - frame_count, 0):
-            max_start = max((total_frames - frame_count) / max(source_rate, 1), 0.0)
-            raise ValueError(
-                f"clip_start_sec is out of range for this file. Choose a start between 0.00 and {max_start:.2f} seconds."
-            )
-        handle.seek(start_frame)
-        audio = handle.read(frames=frame_count, dtype="float32", always_2d=True).T
-    if audio.shape[0] == 1:
-        audio = np.repeat(audio, 2, axis=0)
-    audio_tensor = torch.from_numpy(audio)
+    if sf is not None:
+        try:
+            with sf.SoundFile(str(path)) as handle:
+                source_rate = int(handle.samplerate)
+                total_frames = int(handle.frames)
+                start_frame = max(0, int(round(offset_seconds * source_rate)))
+                frame_count = max(1, int(round(duration_seconds * source_rate)))
+                if total_frames < frame_count:
+                    clip_seconds = total_frames / max(source_rate, 1)
+                    raise ValueError(
+                        f"Uploaded clip is too short. Need at least {duration_seconds:.0f} seconds, got {clip_seconds:.2f} seconds."
+                    )
+                if start_frame > max(total_frames - frame_count, 0):
+                    max_start = max((total_frames - frame_count) / max(source_rate, 1), 0.0)
+                    raise ValueError(
+                        f"clip_start_sec is out of range for this file. Choose a start between 0.00 and {max_start:.2f} seconds."
+                    )
+                handle.seek(start_frame)
+                audio = handle.read(frames=frame_count, dtype="float32", always_2d=True).T
+            audio_tensor = torch.from_numpy(audio)
+            if audio_tensor.shape[0] == 1:
+                audio_tensor = audio_tensor.repeat(2, 1)
+            if source_rate != sample_rate:
+                audio_tensor = torchaudio.functional.resample(audio_tensor, orig_freq=source_rate, new_freq=sample_rate)
+            target_length = int(round(sample_rate * duration_seconds))
+            return _clip_or_pad(audio_tensor.cpu().numpy(), target_length)
+        except ValueError:
+            raise
+        except Exception as exc:
+            raise ValueError("Could not read the uploaded audio file. Please upload a valid WAV, MP3, FLAC, or OGG clip.") from exc
+
+    try:
+        audio_tensor, source_rate = torchaudio.load(str(path))
+    except Exception as exc:
+        detail = str(exc).lower()
+        if "ffmpeg" in detail or "torchcodec" in detail or "backend" in detail:
+            raise FileNotFoundError(
+                "Uploaded-audio decoding is unavailable on this server. The server needs FFmpeg or python-soundfile to process uploaded clips."
+            ) from exc
+        raise ValueError("Could not read the uploaded audio file. Please upload a valid WAV, MP3, FLAC, or OGG clip.") from exc
+
+    source_rate = int(source_rate)
+    total_frames = int(audio_tensor.shape[-1])
+    frame_count = max(1, int(round(duration_seconds * source_rate)))
+    start_frame = max(0, int(round(offset_seconds * source_rate)))
+    if total_frames < frame_count:
+        clip_seconds = total_frames / max(source_rate, 1)
+        raise ValueError(
+            f"Uploaded clip is too short. Need at least {duration_seconds:.0f} seconds, got {clip_seconds:.2f} seconds."
+        )
+    if start_frame > max(total_frames - frame_count, 0):
+        max_start = max((total_frames - frame_count) / max(source_rate, 1), 0.0)
+        raise ValueError(
+            f"clip_start_sec is out of range for this file. Choose a start between 0.00 and {max_start:.2f} seconds."
+        )
+    audio_tensor = audio_tensor[:, start_frame : start_frame + frame_count]
+    if audio_tensor.shape[0] == 1:
+        audio_tensor = audio_tensor.repeat(2, 1)
     if source_rate != sample_rate:
         audio_tensor = torchaudio.functional.resample(audio_tensor, orig_freq=source_rate, new_freq=sample_rate)
     target_length = int(round(sample_rate * duration_seconds))

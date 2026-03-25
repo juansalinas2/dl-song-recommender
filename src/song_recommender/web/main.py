@@ -8,7 +8,6 @@ from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFi
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-from song_recommender.web.audio_query import AUDIO_CLIP_SECONDS, embed_uploaded_clip
 from song_recommender.web.evaluation_store import create_session, ensure_schema, save_response
 from song_recommender.web.recommender import RecommenderIndex, available_models, metadata_lookup, resolve_model, split_lookup, tags_lookup
 
@@ -59,6 +58,18 @@ def _default_model_spec() -> dict[str, object] | None:
     except (FileNotFoundError, KeyError):
         return None
     return spec.as_dict()
+
+
+def _load_embed_uploaded_clip():
+    try:
+        from song_recommender.web.audio_query import embed_uploaded_clip
+    except (ImportError, OSError) as exc:
+        detail = f"missing Python package '{exc.name}'" if isinstance(exc, ModuleNotFoundError) and exc.name else str(exc)
+        raise HTTPException(
+            status_code=503,
+            detail=f"Uploaded-audio recommendations are unavailable on this server: {detail}",
+        ) from exc
+    return embed_uploaded_clip
 
 
 app = FastAPI(title="DL Song Recommender Deployment")
@@ -364,6 +375,7 @@ async def recommend_uploaded_clip(
     suffix = Path(file.filename).suffix or ".wav"
     temp_path: Path | None = None
     try:
+        embed_uploaded_clip = _load_embed_uploaded_clip()
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as handle:
             temp_path = Path(handle.name)
             handle.write(await file.read())
@@ -375,7 +387,6 @@ async def recommend_uploaded_clip(
             space=space,
             blend=blend,
         )
-        payload["query"]["clip_duration_sec"] = AUDIO_CLIP_SECONDS
         return payload
     except FileNotFoundError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc

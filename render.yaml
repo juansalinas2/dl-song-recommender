@@ -1,11 +1,11 @@
 services:
   - type: web
     name: dl-song-recommender-web
-    runtime: python
+    runtime: docker
     plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.11
       - key: XDG_CACHE_HOME
         value: /tmp/.cache
       - key: TORCH_HOME
@@ -18,8 +18,6 @@ services:
         value: 04_resnet18_contrastive_tags
       - key: SONG_RECOMMENDER_ENABLED_MODEL_IDS
         value: 04_resnet18_contrastive_tags,baseline,05_resnet18_contrastive_tags_infonce,06_resnet18_contrastive_tags_audio_grounded_infonce,07_resnet18_audio_centric_blended_teacher
-    buildCommand: python -m pip install --upgrade pip setuptools wheel && python -m pip install -r requirements.txt && python -c "from PIL import Image; import fastapi; import uvicorn; print('render build import check ok')"
     preDeployCommand: PYTHONPATH=src python -m song_recommender.web.render_predeploy
-    startCommand: PYTHONPATH=src python -m uvicorn song_recommender.web.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     autoDeployTrigger: off
