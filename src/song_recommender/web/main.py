@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 from pathlib import Path
 import random
 import tempfile
@@ -23,6 +24,7 @@ _tags_lookup: dict[str, tuple[str, ...]] = {}
 _split_lookup: dict[str, str] = {}
 _lookups_mtime_ns: int | None = None
 _index_cache: dict[str, RecommenderIndex] = {}
+_MULTIPART_AVAILABLE = importlib.util.find_spec("multipart") is not None
 
 
 def refresh_shared_lookups() -> None:
@@ -346,58 +348,67 @@ def recommend(
         raise HTTPException(status_code=400, detail=f"Unknown recommendation space: {exc.args[0]}") from exc
 
 
-@app.post("/api/recommend/upload")
-async def recommend_uploaded_clip(
-    file: UploadFile = File(...),
-    model: str | None = Form(default=None),
-    space: str | None = Form(default=None),
-    blend: float = Form(default=0.5),
-    limit: int = Form(default=10),
-    clip_start_sec: float = Form(default=0.0),
-):
-    if clip_start_sec < 0:
-        raise HTTPException(status_code=400, detail="clip_start_sec must be non-negative.")
-    if limit < 1 or limit > 25:
-        raise HTTPException(status_code=400, detail="limit must be between 1 and 25.")
-    if blend < 0.0 or blend > 1.0:
-        raise HTTPException(status_code=400, detail="blend must be between 0.0 and 1.0.")
-    if not file.filename:
-        raise HTTPException(status_code=400, detail="Missing upload filename.")
+if _MULTIPART_AVAILABLE:
+    @app.post("/api/recommend/upload")
+    async def recommend_uploaded_clip(
+        file: UploadFile = File(...),
+        model: str | None = Form(default=None),
+        space: str | None = Form(default=None),
+        blend: float = Form(default=0.5),
+        limit: int = Form(default=10),
+        clip_start_sec: float = Form(default=0.0),
+    ):
+        if clip_start_sec < 0:
+            raise HTTPException(status_code=400, detail="clip_start_sec must be non-negative.")
+        if limit < 1 or limit > 25:
+            raise HTTPException(status_code=400, detail="limit must be between 1 and 25.")
+        if blend < 0.0 or blend > 1.0:
+            raise HTTPException(status_code=400, detail="blend must be between 0.0 and 1.0.")
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="Missing upload filename.")
 
-    try:
-        index = get_index(model)
-    except KeyError as exc:
-        raise HTTPException(status_code=404, detail=f"Unknown model: {model}") from exc
-    if not index.spec.supports_uploaded_audio:
-        reason = index.spec.upload_support_reason or f"{index.spec.label} does not support uploaded audio."
-        raise HTTPException(status_code=400, detail=reason)
+        try:
+            index = get_index(model)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=f"Unknown model: {model}") from exc
+        if not index.spec.supports_uploaded_audio:
+            reason = index.spec.upload_support_reason or f"{index.spec.label} does not support uploaded audio."
+            raise HTTPException(status_code=400, detail=reason)
 
-    suffix = Path(file.filename).suffix or ".wav"
-    temp_path: Path | None = None
-    try:
-        embed_uploaded_clip = _load_embed_uploaded_clip()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as handle:
-            temp_path = Path(handle.name)
-            handle.write(await file.read())
-        embedded = embed_uploaded_clip(index.spec, temp_path, clip_start_sec=clip_start_sec, filename=file.filename)
-        payload = index.recommend_from_query_embeddings(
-            embedded.query,
-            embedded.embeddings,
-            limit=limit,
-            space=space,
-            blend=blend,
+        suffix = Path(file.filename).suffix or ".wav"
+        temp_path: Path | None = None
+        try:
+            embed_uploaded_clip = _load_embed_uploaded_clip()
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as handle:
+                temp_path = Path(handle.name)
+                handle.write(await file.read())
+            embedded = embed_uploaded_clip(index.spec, temp_path, clip_start_sec=clip_start_sec, filename=file.filename)
+            payload = index.recommend_from_query_embeddings(
+                embedded.query,
+                embedded.embeddings,
+                limit=limit,
+                space=space,
+                blend=blend,
+            )
+            return payload
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=500, detail=f"Audio processing failed: {exc}") from exc
+        finally:
+            await file.close()
+            if temp_path is not None and temp_path.exists():
+                temp_path.unlink(missing_ok=True)
+else:
+    @app.post("/api/recommend/upload")
+    async def recommend_uploaded_clip_unavailable(request: Request):
+        del request
+        raise HTTPException(
+            status_code=503,
+            detail='Uploaded-audio recommendations are unavailable on this server: missing Python package "python-multipart".',
         )
-        return payload
-    except FileNotFoundError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except RuntimeError as exc:
-        raise HTTPException(status_code=500, detail=f"Audio processing failed: {exc}") from exc
-    finally:
-        await file.close()
-        if temp_path is not None and temp_path.exists():
-            temp_path.unlink(missing_ok=True)
 
 
 @app.get("/api/artist-profile")

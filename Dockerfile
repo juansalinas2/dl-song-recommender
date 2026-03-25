@@ -19,7 +19,7 @@ COPY requirements.txt ./
 
 RUN python -m pip install --upgrade pip setuptools wheel \
     && python -m pip install -r requirements.txt \
-    && python -c "import fastapi, soundfile, torch, torchaudio, torchvision, uvicorn, yaml; print('docker build import check ok')"
+    && python -c "import fastapi, multipart, soundfile, torch, torchaudio, torchvision, uvicorn, yaml; print('docker build import check ok')"
 
 COPY . .
 
