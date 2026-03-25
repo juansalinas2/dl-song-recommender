@@ -1,9 +1,23 @@
 services:
   - type: web
     name: dl-song-recommender-web
-    env: python
+    runtime: python
     plan: starter
-    buildCommand: pip install -r requirements.txt
+    envVars:
+      - key: XDG_CACHE_HOME
+        value: /tmp/.cache
+      - key: TORCH_HOME
+        value: /tmp/torch
+      - key: MPLCONFIGDIR
+        value: /tmp/matplotlib
+      - key: SONG_RECOMMENDER_EVALUATION_DB_PATH
+        value: /tmp/song-recommender/evaluation.sqlite3
+      - key: SONG_RECOMMENDER_DEFAULT_MODEL_ID
+        value: 04_resnet18_contrastive_tags
+      - key: SONG_RECOMMENDER_ENABLED_MODEL_IDS
+        value: 04_resnet18_contrastive_tags,baseline,05_resnet18_contrastive_tags_infonce,06_resnet18_contrastive_tags_audio_grounded_infonce,07_resnet18_audio_centric_blended_teacher
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    preDeployCommand: PYTHONPATH=src python3 -m song_recommender.web.render_predeploy
     startCommand: PYTHONPATH=src uvicorn song_recommender.web.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
-    autoDeploy: false
+    autoDeployTrigger: off

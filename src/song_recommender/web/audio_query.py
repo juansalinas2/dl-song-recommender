@@ -7,6 +7,8 @@ from pathlib import Path
 import tempfile
 
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
+os.environ.setdefault("XDG_CACHE_HOME", "/tmp/.cache")
+os.environ.setdefault("TORCH_HOME", "/tmp/torch")
 import numpy as np
 from PIL import Image
 import soundfile as sf
@@ -68,7 +70,12 @@ def _load_separator():
         raise FileNotFoundError("Demucs is not installed on this server. Uploaded-audio recommendations are unavailable.") from exc
     model = _SEPARATOR_CACHE.get("htdemucs")
     if model is None:
-        model = get_model("htdemucs")
+        try:
+            model = get_model("htdemucs")
+        except Exception as exc:
+            raise FileNotFoundError(
+                "Demucs weights are unavailable. The server needs network access to download the htdemucs model for uploaded-audio recommendations."
+            ) from exc
         model.cpu()
         model.eval()
         _SEPARATOR_CACHE["htdemucs"] = model

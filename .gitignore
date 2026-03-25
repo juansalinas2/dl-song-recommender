@@ -84,6 +84,11 @@ ENV/
 *.log
 
 ######################
+# Runtime data
+######################
+src/song_recommender/web/data/evaluation.sqlite3*
+
+######################
 # Coverage / testing
 ######################
 .coverage

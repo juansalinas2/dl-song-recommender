@@ -1920,6 +1920,22 @@
         modelSelect.value = currentModel;
         updateSpaceSelector();
         renderModelLegend();
+        syncUploadAvailability();
+      }
+
+      function currentModelConfig() {
+        return modelsById.get(currentModel) || null;
+      }
+
+      function currentModelSupportsUploadedAudio() {
+        const model = currentModelConfig();
+        return !model || model.supports_uploaded_audio !== false;
+      }
+
+      function currentModelUploadSupportReason() {
+        const model = currentModelConfig();
+        if (!model) return "";
+        return model.upload_support_reason || `${model.label} does not support uploaded audio.`;
       }
 
       function updateSpaceSelector() {
@@ -1975,6 +1991,27 @@
           return;
         }
         uploadClipHelper.textContent = `Clip start: ${formatClock(start)}.`;
+      }
+
+      function syncUploadAvailability() {
+        const file = uploadInput.files && uploadInput.files[0];
+        if (!file) return;
+        if (!currentModelSupportsUploadedAudio()) {
+          uploadSubmitButton.disabled = true;
+          uploadStatus.textContent = currentModelUploadSupportReason();
+          return;
+        }
+        if (currentUploadDuration > 0 && currentUploadDuration < 10) {
+          uploadSubmitButton.disabled = true;
+          uploadStatus.textContent = "This clip is too short. Upload a track that is at least 10 seconds long.";
+          return;
+        }
+        if (uploadPreview.src) {
+          uploadSubmitButton.disabled = false;
+        }
+        if (uploadStatus.textContent === currentModelUploadSupportReason()) {
+          uploadStatus.textContent = "";
+        }
       }
 
       function stopUploadedClipPreview() {
@@ -2129,6 +2166,7 @@
         uploadClipControls.hidden = true;
         uploadSliderBlock.hidden = true;
         uploadSubmitButton.disabled = true;
+        syncUploadAvailability();
       }
 
       function hasActiveUploadedQuery() {
@@ -2146,6 +2184,10 @@
         const file = uploadInput.files && uploadInput.files[0];
         if (!file) {
           uploadStatus.textContent = "Choose an audio file first.";
+          return;
+        }
+        if (!currentModelSupportsUploadedAudio()) {
+          uploadStatus.textContent = currentModelUploadSupportReason();
           return;
         }
         uploadStatus.textContent = "Uploading clip and building stem-aware recommendation query...";
@@ -2522,6 +2564,7 @@
         modelLegend.innerHTML = `
           <div class="legend-model">${escapeHtml(model.label)}</div>
           <div class="legend-meta">Demo mode · ${escapeHtml(spaceLabel(currentSpace || "song"))}</div>
+          <div class="legend-meta">${model.supports_uploaded_audio === false ? "Uploaded audio unavailable" : "Uploaded audio available"}</div>
           ${missing.length ? `<div class="legend-missing">Missing locally: ${missing.map((item) => escapeHtml(item.label)).join(", ")}</div>` : ""}
         `;
       }
@@ -3092,6 +3135,7 @@
         uploadSliderBlock.hidden = maxStart <= 0.05;
         uploadStatus.textContent = "";
         uploadSubmitButton.disabled = false;
+        syncUploadAvailability();
         updateUploadClipLabels();
       });
       uploadPreview.addEventListener("error", () => {
@@ -3129,9 +3173,10 @@
         currentResultsLimit = 7;
         updateSpaceSelector();
         renderModelLegend();
+        syncUploadAvailability();
         if (currentQueryId) {
           loadRecommendations(currentQueryId);
-        } else if (hasActiveUploadedQuery()) {
+        } else if (hasActiveUploadedQuery() && currentModelSupportsUploadedAudio()) {
           loadRecommendationsFromUpload({ scrollIntoView: false });
         } else {
           currentDistance = null;

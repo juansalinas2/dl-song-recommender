@@ -11,10 +11,25 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
 FINAL_EMBEDDINGS_ROOT = ROOT / "data" / "processed" / "model_runs" / "final_embeddings_train_validation"
-DEFAULT_MODEL_ID = ""
+BASELINE_EMBEDDINGS_PATH = ROOT / "data" / "processed" / "baseline_embeddings.npz"
+DEFAULT_MODEL_ID = os.getenv("SONG_RECOMMENDER_DEFAULT_MODEL_ID", "04_resnet18_contrastive_tags")
 TAG_CACHE_PATH = Path(__file__).resolve().parent / "data" / "tags.json"
 CATALOG_CACHE_PATH = Path(__file__).resolve().parent / "data" / "catalog.json"
 QUERY_MODES = ("demo", "evaluation")
+EXCLUDED_MODEL_IDS = {"04a_resnet18_contrastive_tags_beeg"}
+DEFAULT_ENABLED_MODEL_IDS = (
+    "04_resnet18_contrastive_tags",
+    "baseline",
+    "05_resnet18_contrastive_tags_infonce",
+    "06_resnet18_contrastive_tags_audio_grounded_infonce",
+    "07_resnet18_audio_centric_blended_teacher",
+)
+ENABLED_MODEL_IDS = tuple(
+    model_id.strip()
+    for model_id in os.getenv("SONG_RECOMMENDER_ENABLED_MODEL_IDS", ",".join(DEFAULT_ENABLED_MODEL_IDS)).split(",")
+    if model_id.strip()
+)
+ENABLED_MODEL_ID_SET = set(ENABLED_MODEL_IDS)
 
 
 def normalize_search_text(value: str) -> str:
@@ -60,18 +75,63 @@ class ModelSpec:
     description: str
     available: bool = True
     missing_reason: str = ""
+    supports_uploaded_audio: bool = False
+    upload_support_reason: str = ""
 
-    def as_dict(self) -> dict[str, str]:
+    def as_dict(self) -> dict[str, object]:
         return {
             "model_id": self.model_id,
             "label": self.label,
             "description": self.description,
             "available": self.available,
             "missing_reason": self.missing_reason,
+            "supports_uploaded_audio": self.supports_uploaded_audio,
+            "upload_support_reason": self.upload_support_reason,
         }
 
 
-KNOWN_MODELS: tuple[ModelSpec, ...] = ()
+KNOWN_MODELS: tuple[ModelSpec, ...] = (
+    ModelSpec(
+        model_id="04_resnet18_contrastive_tags",
+        label="Tag-aligned audio encoder (ResNet04)",
+        path=FINAL_EMBEDDINGS_ROOT / "04_Resnet18_contrastive_tags" / "embeddings.npz",
+        embedding_key="embeddings",
+        description="Audio encoder trained to recover tag-derived song similarity from audio alone.",
+        supports_uploaded_audio=True,
+    ),
+    ModelSpec(
+        model_id="baseline",
+        label="Spectrogram similarity baseline (Baseline, experimental)",
+        path=BASELINE_EMBEDDINGS_PATH,
+        embedding_key="embeddings",
+        description="Non-neural spectrogram baseline used for reference comparisons.",
+        upload_support_reason="The baseline can rank catalog songs but cannot embed uploaded audio clips.",
+    ),
+    ModelSpec(
+        model_id="05_resnet18_contrastive_tags_infonce",
+        label="Contrastive semantic audio encoder (ResNet05, experimental)",
+        path=FINAL_EMBEDDINGS_ROOT / "05_Resnet18_contrastive_tags_infonce" / "embeddings.npz",
+        embedding_key="embeddings",
+        description="Contrastive audio encoder shaped by semantic tag supervision.",
+        supports_uploaded_audio=True,
+    ),
+    ModelSpec(
+        model_id="06_resnet18_contrastive_tags_audio_grounded_infonce",
+        label="Audio-grounded contrastive encoder (ResNet06, experimental)",
+        path=FINAL_EMBEDDINGS_ROOT / "06_Resnet18_contrastive_tags_audio_grounded_infonce" / "embeddings.npz",
+        embedding_key="embeddings",
+        description="Contrastive encoder with audio-grounded positives for retrieval.",
+        supports_uploaded_audio=True,
+    ),
+    ModelSpec(
+        model_id="07_resnet18_audio_centric_blended_teacher",
+        label="Blended-teacher late-fusion encoder (ResNet07, experimental)",
+        path=FINAL_EMBEDDINGS_ROOT / "07_Resnet18_audio_centric_blended_teacher" / "embeddings.npz",
+        embedding_key="embeddings",
+        description="Final late-fusion model trained against a blended audio and tag teacher.",
+        supports_uploaded_audio=True,
+    ),
+)
 
 
 def _slugify_model_id(value: str) -> str:
@@ -96,6 +156,25 @@ def _embedding_key_from_blob(blob) -> str | None:
     return None
 
 
+def _model_is_enabled(model_id: str) -> bool:
+    return not ENABLED_MODEL_ID_SET or model_id in ENABLED_MODEL_ID_SET
+
+
+def _uploaded_audio_support_for_path(path: Path) -> tuple[bool, str]:
+    manifest_path = path.parent / "manifest.json"
+    if not manifest_path.exists():
+        return False, "This model does not include the checkpoint files needed for uploaded audio."
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return False, "This model manifest could not be read for uploaded audio."
+    run_label = str(payload.get("run_label") or path.parent.name)
+    checkpoint_path = ROOT / "data" / "processed" / "model_runs" / run_label / "checkpoint.pt"
+    if checkpoint_path.exists():
+        return True, ""
+    return False, "This model is missing the checkpoint needed for uploaded audio."
+
+
 def _discover_local_models() -> list[ModelSpec]:
     known_paths = {spec.path.resolve() for spec in KNOWN_MODELS}
     discovered: list[ModelSpec] = []
@@ -108,15 +187,19 @@ def _discover_local_models() -> list[ModelSpec]:
         if resolved in known_paths:
             continue
         try:
-            blob = np.load(path, allow_pickle=True)
+            with np.load(path, allow_pickle=True) as blob:
+                embedding_key = _embedding_key_from_blob(blob)
+                has_spotify_ids = "spotify_id" in blob.files
         except Exception:
             continue
-        embedding_key = _embedding_key_from_blob(blob)
-        if embedding_key is None or "spotify_id" not in blob.files:
+        if embedding_key is None or not has_spotify_ids:
             continue
         relative_parent = path.parent.relative_to(data_root)
         relative_label = str(relative_parent) if relative_parent != Path(".") else path.stem
         model_id = _slugify_model_id(str(relative_parent))
+        if model_id in EXCLUDED_MODEL_IDS or not _model_is_enabled(model_id):
+            continue
+        supports_uploaded_audio, upload_support_reason = _uploaded_audio_support_for_path(path)
         discovered.append(
             ModelSpec(
                 model_id=model_id,
@@ -124,6 +207,8 @@ def _discover_local_models() -> list[ModelSpec]:
                 path=path,
                 embedding_key=embedding_key,
                 description="Local embedding model ready for comparison.",
+                supports_uploaded_audio=supports_uploaded_audio,
+                upload_support_reason=upload_support_reason,
             )
         )
     return discovered
@@ -141,16 +226,16 @@ class RecommenderIndex:
         if not spec.path.exists():
             raise FileNotFoundError(f"Expected embeddings at {spec.path}")
 
-        blob = np.load(spec.path, allow_pickle=True)
-        spotify_ids = blob["spotify_id"].astype(str)
-        self.embedding_spaces = self._load_embedding_spaces(blob, spec.embedding_key)
+        with np.load(spec.path, allow_pickle=True) as blob:
+            spotify_ids = blob["spotify_id"].astype(str)
+            self.embedding_spaces = self._load_embedding_spaces(blob, spec.embedding_key)
+            names = blob["name"].astype(str) if "name" in blob.files else None
+            artists = blob["artist"].astype(str) if "artist" in blob.files else None
         self.default_space = self._default_space()
 
         metadata_lookup = metadata_lookup or {}
         tags_lookup = tags_lookup or {}
         split_lookup = split_lookup or {}
-        names = blob["name"].astype(str) if "name" in blob.files else None
-        artists = blob["artist"].astype(str) if "artist" in blob.files else None
 
         self.tracks = []
         for idx, spotify_id in enumerate(spotify_ids):
@@ -166,12 +251,26 @@ class RecommenderIndex:
             )
 
         self.lookup = {track.spotify_id: idx for idx, track in enumerate(self.tracks)}
+        test_query_indices = np.asarray(
+            [idx for idx, track in enumerate(self.tracks) if track.split == "test"],
+            dtype=np.int32,
+        )
+        val_query_indices = np.asarray(
+            [idx for idx, track in enumerate(self.tracks) if track.split == "val"],
+            dtype=np.int32,
+        )
+        if len(test_query_indices) > 0:
+            self.evaluation_split = "test"
+            evaluation_query_indices = test_query_indices
+        elif len(val_query_indices) > 0:
+            self.evaluation_split = "val"
+            evaluation_query_indices = val_query_indices
+        else:
+            self.evaluation_split = None
+            evaluation_query_indices = np.asarray([], dtype=np.int32)
         self.query_indices = {
             "demo": np.arange(len(self.tracks), dtype=np.int32),
-            "evaluation": np.asarray(
-                [idx for idx, track in enumerate(self.tracks) if track.split == "test"],
-                dtype=np.int32,
-            ),
+            "evaluation": evaluation_query_indices,
         }
         self.artist_lookup: dict[str, list[Track]] = {}
         for track in self.tracks:
@@ -262,7 +361,11 @@ class RecommenderIndex:
             raise KeyError(spotify_id)
 
         normalized = self._normalize_mode(mode)
-        if normalized == "evaluation" and self.tracks[idx].split != "test":
+        if (
+            normalized == "evaluation"
+            and self.evaluation_split is not None
+            and self.tracks[idx].split != self.evaluation_split
+        ):
             raise PermissionError(spotify_id)
         return idx
 
@@ -839,6 +942,12 @@ def available_models() -> list[ModelSpec]:
         models.append(override)
         seen.add(override.model_id)
 
+    for spec in KNOWN_MODELS:
+        if not spec.path.exists() or spec.model_id in seen or not _model_is_enabled(spec.model_id):
+            continue
+        models.append(spec)
+        seen.add(spec.model_id)
+
     for spec in _discover_local_models():
         if spec.model_id in seen:
             continue
@@ -878,17 +987,17 @@ def metadata_lookup() -> dict[str, tuple[str, str]]:
             return lookup
 
     for model in available_models():
-        blob = np.load(model.path, allow_pickle=True)
-        if "name" not in blob.files or "artist" not in blob.files:
-            continue
-        lookup: dict[str, tuple[str, str]] = {}
-        for spotify_id, name, artist in zip(
-            blob["spotify_id"].astype(str),
-            blob["name"].astype(str),
-            blob["artist"].astype(str),
-            strict=True,
-        ):
-            lookup[str(spotify_id)] = (str(name), str(artist))
+        with np.load(model.path, allow_pickle=True) as blob:
+            if "name" not in blob.files or "artist" not in blob.files:
+                continue
+            lookup: dict[str, tuple[str, str]] = {}
+            for spotify_id, name, artist in zip(
+                blob["spotify_id"].astype(str),
+                blob["name"].astype(str),
+                blob["artist"].astype(str),
+                strict=True,
+            ):
+                lookup[str(spotify_id)] = (str(name), str(artist))
         if lookup:
             return lookup
     return {}
@@ -953,9 +1062,10 @@ def split_lookup() -> dict[str, str]:
         if split is None:
             continue
         try:
-            blob = np.load(spec.path, allow_pickle=True)
+            with np.load(spec.path, allow_pickle=True) as blob:
+                spotify_ids = blob["spotify_id"].astype(str)
         except Exception:
             continue
-        for spotify_id in blob["spotify_id"].astype(str):
+        for spotify_id in spotify_ids:
             lookup[str(spotify_id)] = split
     return lookup

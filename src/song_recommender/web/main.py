@@ -357,6 +357,9 @@ async def recommend_uploaded_clip(
         index = get_index(model)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=f"Unknown model: {model}") from exc
+    if not index.spec.supports_uploaded_audio:
+        reason = index.spec.upload_support_reason or f"{index.spec.label} does not support uploaded audio."
+        raise HTTPException(status_code=400, detail=reason)
 
     suffix = Path(file.filename).suffix or ".wav"
     temp_path: Path | None = None
