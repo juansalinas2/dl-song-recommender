@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Echoform</title>
+    <title>Songhalo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -780,6 +780,774 @@
       }
       .loading-card.recommendation-loading-card {
         margin-top: 12px;
+      }
+      .recommendation-loading-shell {
+        display: grid;
+        gap: 18px;
+        opacity: 1;
+        visibility: visible;
+      }
+      .recommendation-loading-copy {
+        display: grid;
+        gap: 10px;
+        padding: 28px 28px 24px;
+        opacity: 1;
+        transform: none;
+        border-radius: 24px;
+        border: 1px solid rgba(107, 182, 255, 0.16);
+        background:
+          radial-gradient(circle at top right, rgba(107, 182, 255, 0.08), transparent 34%),
+          linear-gradient(180deg, rgba(16, 24, 34, 0.92), rgba(12, 18, 27, 0.84));
+        box-shadow: 0 24px 42px rgba(0, 0, 0, 0.2);
+        animation: loading-shell-tint 16s ease-in-out infinite;
+      }
+      .recommendation-loading-visual {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-height: min(64vh, 560px);
+        margin-bottom: 10px;
+        overflow: hidden;
+        border-radius: 24px;
+        border: 1px solid rgba(231, 238, 247, 0.06);
+        background:
+          radial-gradient(circle at 50% 46%, rgba(107, 182, 255, 0.18), transparent 42%),
+          radial-gradient(circle at 20% 20%, rgba(131, 230, 180, 0.14), transparent 28%),
+          radial-gradient(circle at 82% 18%, rgba(107, 182, 255, 0.08), transparent 24%),
+          linear-gradient(180deg, rgba(9, 15, 22, 0.86), rgba(10, 17, 24, 0.72));
+        background-size: 130% 130%, 120% 120%, 118% 118%, 100% 100%;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        animation: loading-background-shift 18s ease-in-out infinite;
+      }
+      .recommendation-loading-visual::before {
+        content: "";
+        position: absolute;
+        z-index: 0;
+        inset: auto 18px 18px 18px;
+        height: 44px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 50% 50%, rgba(107, 182, 255, 0.16), rgba(107, 182, 255, 0));
+        filter: blur(16px);
+        opacity: 0.9;
+      }
+      .recommendation-loading-visual::after {
+        content: "";
+        position: absolute;
+        z-index: 0;
+        left: 50%;
+        top: 52%;
+        width: 220px;
+        height: 220px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(107, 182, 255, 0.14) 0%, rgba(107, 182, 255, 0.04) 42%, rgba(107, 182, 255, 0) 72%);
+        transform: translate(-50%, -50%);
+        animation: loading-pulse 3.6s ease-out infinite;
+        pointer-events: none;
+      }
+      .recommendation-loading-spectrum {
+        position: absolute;
+        left: 24px;
+        right: 24px;
+        bottom: 24px;
+        height: 72px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 8px;
+        opacity: 0.84;
+      }
+      .recommendation-loading-bar {
+        width: 10px;
+        border-radius: 999px 999px 4px 4px;
+        background: linear-gradient(180deg, rgba(131, 230, 180, 0.92), rgba(107, 182, 255, 0.72));
+        box-shadow: 0 0 18px rgba(107, 182, 255, 0.14);
+        animation: loading-bars 1.6s ease-in-out infinite;
+        transform-origin: bottom center;
+      }
+      .recommendation-loading-bar:nth-child(2) { animation-delay: 120ms; }
+      .recommendation-loading-bar:nth-child(3) { animation-delay: 240ms; }
+      .recommendation-loading-bar:nth-child(4) { animation-delay: 360ms; }
+      .recommendation-loading-bar:nth-child(5) { animation-delay: 480ms; }
+      .recommendation-loading-bar:nth-child(6) { animation-delay: 600ms; }
+      .recommendation-loading-orbit {
+        position: relative;
+        z-index: 1;
+        width: min(100%, 560px);
+        height: min(58vh, 420px);
+        min-height: 320px;
+        filter: drop-shadow(0 18px 38px rgba(107, 182, 255, 0.14));
+        animation: orbital-sway 18s ease-in-out infinite;
+        transform-origin: 50% 52%;
+      }
+      .recommendation-loading-wave {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        border: 1.5px solid rgba(143, 223, 255, 0.72);
+        box-shadow: 0 0 0 1px rgba(255, 214, 123, 0.12), 0 0 24px rgba(107, 182, 255, 0.18);
+        transform: translate(-50%, -50%) scale(0.22);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .recommendation-loading-wave.wave-b {
+        border-color: rgba(131, 230, 180, 0.52);
+      }
+      .recommendation-loading-wave.wave-c {
+        border-color: rgba(255, 214, 123, 0.46);
+      }
+      .recommendation-loading-orbit.pulsing .recommendation-loading-wave.wave-a {
+        animation: loading-wave 1.7s ease-out forwards;
+      }
+      .recommendation-loading-orbit.pulsing .recommendation-loading-wave.wave-b {
+        animation: loading-wave 1.7s ease-out 160ms forwards;
+      }
+      .recommendation-loading-orbit.pulsing .recommendation-loading-wave.wave-c {
+        animation: loading-wave 1.7s ease-out 320ms forwards;
+      }
+      .recommendation-loading-node-shell {
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        top: 50%;
+        display: block;
+      }
+      .recommendation-loading-node-shell.song-shell {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--x1)), calc(-50% + var(--y1))) scale(var(--s1, 0.72));
+        animation:
+          song-arrive 520ms cubic-bezier(0.2, 0.9, 0.2, 1) var(--delay, 0s) forwards,
+          song-settle 15.8s cubic-bezier(0.22, 0.78, 0.18, 1) calc(var(--delay, 0s) + 520ms) forwards,
+          song-idle var(--duration, 6.6s) ease-in-out calc(var(--delay, 0s) + 16.32s) infinite alternate;
+      }
+      .recommendation-loading-link {
+        position: absolute;
+        z-index: 1;
+        left: 50%;
+        top: 50%;
+        height: 2px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(107, 182, 255, 0.02), rgba(107, 182, 255, 0.28), rgba(131, 230, 180, 0.08));
+        transform-origin: left center;
+        opacity: 0.38;
+        filter: blur(0.3px);
+        will-change: transform, width, opacity;
+        background-size: 180% 100%;
+        animation-name: loading-link-tint;
+        animation-duration: 9s;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+      }
+      .recommendation-loading-link.link-a {
+        width: 132px;
+        transform: translate(-6px, -1px) rotate(-152deg);
+        animation:
+          link-a 15.6s cubic-bezier(0.22, 0.78, 0.18, 1) 0.4s forwards,
+          loading-link-tint 8.4s ease-in-out 0.2s infinite alternate;
+      }
+      .recommendation-loading-link.link-b {
+        width: 148px;
+        transform: translate(4px, 0) rotate(-28deg);
+        animation:
+          link-b 16.2s cubic-bezier(0.22, 0.78, 0.18, 1) 0.52s forwards,
+          loading-link-tint 9.2s ease-in-out 0.4s infinite alternate;
+      }
+      .recommendation-loading-link.link-c {
+        width: 124px;
+        transform: translate(-6px, 2px) rotate(146deg);
+        animation:
+          link-c 15.9s cubic-bezier(0.22, 0.78, 0.18, 1) 0.64s forwards,
+          loading-link-tint 8.8s ease-in-out 0.7s infinite alternate;
+      }
+      .recommendation-loading-link.link-d {
+        width: 136px;
+        transform: translate(-4px, 1px) rotate(34deg);
+        animation:
+          link-d 16.5s cubic-bezier(0.22, 0.78, 0.18, 1) 0.76s forwards,
+          loading-link-tint 9.6s ease-in-out 1s infinite alternate;
+      }
+      .recommendation-loading-link.link-breakaway {
+        width: 168px;
+        background: linear-gradient(90deg, rgba(131, 230, 180, 0.02), rgba(131, 230, 180, 0.34), rgba(255, 210, 116, 0.08));
+        transform: translate(10px, -3px) rotate(-18deg);
+        opacity: 0;
+        animation:
+          link-breakaway 16.8s cubic-bezier(0.22, 0.78, 0.18, 1) 0.88s forwards,
+          loading-link-tint 8.6s ease-in-out 1.2s infinite alternate;
+      }
+      .recommendation-loading-orbit::before,
+      .recommendation-loading-orbit::after {
+        content: "";
+        position: absolute;
+        inset: 18% 14%;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(107, 182, 255, 0.12) 0%, rgba(107, 182, 255, 0.02) 40%, rgba(107, 182, 255, 0) 72%);
+        filter: blur(10px);
+        opacity: 0.85;
+      }
+      .recommendation-loading-orbit::after {
+        inset: 26% 24%;
+        background: radial-gradient(circle, rgba(131, 230, 180, 0.08) 0%, rgba(131, 230, 180, 0.02) 38%, rgba(131, 230, 180, 0) 72%);
+        opacity: 0.8;
+      }
+      .recommendation-loading-node-shell.source-shell {
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        animation: source-anchor 7.8s ease-in-out infinite;
+        z-index: 4;
+        cursor: pointer;
+      }
+      .recommendation-loading-node {
+        display: block;
+        position: relative;
+        border-radius: 999px;
+        background:
+          radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.18) 18%, rgba(255, 255, 255, 0) 38%),
+          radial-gradient(circle at 68% 72%, rgba(9, 20, 32, 0.14) 0%, rgba(9, 20, 32, 0) 44%),
+          linear-gradient(145deg, rgba(131, 230, 180, 1), rgba(107, 182, 255, 0.98));
+        box-shadow: 0 0 0 8px rgba(107, 182, 255, 0.06), 0 0 22px rgba(107, 182, 255, 0.18);
+        pointer-events: auto;
+        touch-action: none;
+        cursor: grab;
+        user-select: none;
+        -webkit-user-select: none;
+        will-change: transform;
+      }
+      .recommendation-loading-node.reacting {
+        transition: transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .recommendation-loading-node::before,
+      .recommendation-loading-node::after {
+        content: "";
+        position: absolute;
+        opacity: 0;
+        transition: opacity 140ms ease;
+        pointer-events: none;
+      }
+      .recommendation-loading-node::before {
+        left: 24%;
+        top: 28%;
+        width: 52%;
+        height: 14%;
+        background:
+          radial-gradient(circle at 24% 50%, rgba(8, 18, 28, 0.82) 0 18%, transparent 21%),
+          radial-gradient(circle at 76% 50%, rgba(8, 18, 28, 0.82) 0 18%, transparent 21%);
+      }
+      .recommendation-loading-node::after {
+        left: 32%;
+        top: 56%;
+        width: 34%;
+        height: 12%;
+        border-bottom: 2px solid rgba(8, 18, 28, 0.76);
+        border-radius: 0 0 999px 999px;
+      }
+      .recommendation-loading-node:active {
+        cursor: grabbing;
+      }
+      .recommendation-loading-node.dragging {
+        z-index: 3;
+        cursor: grabbing;
+        box-shadow: 0 0 0 14px rgba(107, 182, 255, 0.08), 0 0 34px rgba(107, 182, 255, 0.24);
+      }
+      .recommendation-loading-node.dragging::before,
+      .recommendation-loading-node.dragging::after {
+        opacity: 1;
+      }
+      .recommendation-loading-node.source {
+        width: 58px;
+        height: 58px;
+        overflow: visible;
+        cursor: default;
+        pointer-events: none;
+        box-shadow: 0 0 0 16px rgba(107, 182, 255, 0.08), 0 0 42px rgba(131, 230, 180, 0.18);
+        background:
+          radial-gradient(circle at 28% 24%, rgba(255, 252, 233, 0.98) 0%, rgba(255, 235, 162, 0.58) 18%, rgba(255, 255, 255, 0) 38%),
+          radial-gradient(circle at 50% 50%, rgba(255, 205, 92, 1) 0%, rgba(255, 162, 61, 0.96) 45%, rgba(236, 103, 33, 0.92) 72%, rgba(184, 66, 24, 0.96) 100%);
+        animation: source-core-glow 5.8s ease-in-out infinite;
+      }
+      .recommendation-loading-node.source::before,
+      .recommendation-loading-node.source::after {
+        opacity: 0;
+      }
+      .recommendation-loading-face {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .recommendation-loading-eye {
+        position: absolute;
+        top: 15px;
+        width: 16px;
+        height: 20px;
+        border-radius: 999px;
+        background:
+          radial-gradient(circle at 36% 26%, rgba(255, 255, 255, 0.99) 0 14%, rgba(255, 255, 255, 0) 18%),
+          linear-gradient(180deg, rgba(255, 252, 246, 0.99), rgba(255, 239, 220, 0.96));
+        box-shadow:
+          inset 0 -1px 2px rgba(188, 98, 40, 0.12),
+          0 1px 0 rgba(255, 255, 255, 0.36);
+      }
+      .recommendation-loading-eye.left {
+        left: 13px;
+        transform: rotate(-3deg);
+      }
+      .recommendation-loading-eye.right {
+        right: 13px;
+        transform: rotate(3deg);
+      }
+      .recommendation-loading-eye::after {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 6px;
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background:
+          radial-gradient(circle at 34% 34%, rgba(255, 255, 255, 0.94) 0 16%, rgba(255, 255, 255, 0) 18%),
+          radial-gradient(circle at 50% 50%, rgba(14, 24, 36, 1) 0 56%, rgba(7, 11, 17, 1) 58% 100%);
+        box-shadow: 0 0 0 1px rgba(19, 31, 46, 0.05);
+        animation: source-eye-look 4.8s ease-in-out infinite;
+      }
+      .recommendation-loading-eye.right::after {
+        animation-delay: 120ms;
+      }
+      .recommendation-loading-brow {
+        position: absolute;
+        top: 13px;
+        width: 15px;
+        height: 6px;
+        border-top: 2px solid rgba(126, 54, 20, 0.32);
+        border-radius: 999px;
+        opacity: 0.24;
+      }
+      .recommendation-loading-brow.left {
+        left: 15px;
+        transform: rotate(-2deg);
+      }
+      .recommendation-loading-brow.right {
+        right: 15px;
+        transform: rotate(2deg);
+      }
+      .recommendation-loading-mouth {
+        position: absolute;
+        left: 20px;
+        top: 32px;
+        width: 15px;
+        height: 12px;
+        border-right: 2px solid rgba(116, 44, 15, 0.7);
+        border-bottom: 2px solid rgba(116, 44, 15, 0.7);
+        border-radius: 0 0 14px 0;
+        opacity: 0.9;
+        transform-origin: 72% 62%;
+        animation: source-mouth-react 6.2s ease-in-out infinite;
+      }
+      .recommendation-loading-node.neighbor-a,
+      .recommendation-loading-node.neighbor-b,
+      .recommendation-loading-node.neighbor-c,
+      .recommendation-loading-node.neighbor-d,
+      .recommendation-loading-node.breakaway {
+        width: 20px;
+        height: 20px;
+        opacity: 1;
+      }
+      .recommendation-loading-node.neighbor-a,
+      .recommendation-loading-node.neighbor-b,
+      .recommendation-loading-node.neighbor-c,
+      .recommendation-loading-node.neighbor-d {
+        background:
+          radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.96) 0%, rgba(214, 239, 255, 0.52) 18%, rgba(255, 255, 255, 0) 36%),
+          radial-gradient(circle at 68% 74%, rgba(5, 18, 40, 0.2) 0%, rgba(5, 18, 40, 0) 44%),
+          radial-gradient(circle at 36% 34%, rgba(228, 245, 255, 1), rgba(120, 203, 255, 0.98) 42%, rgba(57, 135, 255, 0.98) 76%);
+        border: 1px solid rgba(225, 244, 255, 0.7);
+        box-shadow: 0 0 0 12px rgba(107, 182, 255, 0.12), 0 0 34px rgba(107, 182, 255, 0.34);
+        animation:
+          neighbor-glimmer 5.4s ease-in-out infinite,
+          node-float 6.8s ease-in-out infinite;
+      }
+      .recommendation-loading-node-shell.neighbor-a-shell {
+        opacity: 0;
+        animation:
+          song-arrive 520ms cubic-bezier(0.2, 0.9, 0.2, 1) 0.16s forwards,
+          cluster-a 16s cubic-bezier(0.22, 0.78, 0.18, 1) 0.68s forwards;
+      }
+      .recommendation-loading-node-shell.neighbor-b-shell {
+        opacity: 0;
+        animation:
+          song-arrive 520ms cubic-bezier(0.2, 0.9, 0.2, 1) 0.28s forwards,
+          cluster-b 16.4s cubic-bezier(0.22, 0.78, 0.18, 1) 0.8s forwards;
+      }
+      .recommendation-loading-node-shell.neighbor-c-shell {
+        opacity: 0;
+        animation:
+          song-arrive 520ms cubic-bezier(0.2, 0.9, 0.2, 1) 0.4s forwards,
+          cluster-c 15.8s cubic-bezier(0.22, 0.78, 0.18, 1) 0.92s forwards;
+      }
+      .recommendation-loading-node-shell.neighbor-d-shell {
+        opacity: 0;
+        animation:
+          song-arrive 520ms cubic-bezier(0.2, 0.9, 0.2, 1) 0.52s forwards,
+          cluster-d 16.6s cubic-bezier(0.22, 0.78, 0.18, 1) 1.04s forwards;
+      }
+      .recommendation-loading-node.breakaway {
+        background:
+          radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.94) 0%, rgba(255, 241, 190, 0.52) 18%, rgba(255, 255, 255, 0) 36%),
+          radial-gradient(circle at 64% 76%, rgba(42, 20, 6, 0.18) 0%, rgba(42, 20, 6, 0) 44%),
+          linear-gradient(145deg, rgba(131, 230, 180, 1), rgba(255, 210, 116, 0.96));
+        box-shadow: 0 0 0 10px rgba(131, 230, 180, 0.08), 0 0 28px rgba(255, 210, 116, 0.18);
+        animation:
+          breakaway-glimmer 4.8s ease-in-out infinite,
+          node-float 6.2s ease-in-out infinite;
+      }
+      .recommendation-loading-node.song {
+        width: 15px;
+        height: 15px;
+        background:
+          radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.96) 0%, rgba(214, 239, 255, 0.56) 18%, rgba(255, 255, 255, 0) 36%),
+          radial-gradient(circle at 66% 74%, rgba(5, 18, 40, 0.16) 0%, rgba(5, 18, 40, 0) 44%),
+          radial-gradient(circle at 34% 34%, rgba(228, 245, 255, 1), rgba(120, 203, 255, 0.98) 42%, rgba(57, 135, 255, 0.98) 76%);
+        border: 1px solid rgba(225, 244, 255, 0.68);
+        box-shadow: 0 0 0 8px rgba(107, 182, 255, 0.07), 0 0 20px rgba(107, 182, 255, 0.2);
+        animation:
+          song-glimmer 4.4s ease-in-out infinite,
+          node-float 7.4s ease-in-out infinite;
+      }
+      .recommendation-loading-node-shell.breakaway-shell {
+        opacity: 0;
+        animation:
+          song-arrive 520ms cubic-bezier(0.2, 0.9, 0.2, 1) 0.72s forwards,
+          cluster-breakaway 16.8s cubic-bezier(0.22, 0.78, 0.18, 1) 1.24s forwards;
+      }
+      @keyframes loading-bars {
+        0%, 100% { transform: scaleY(0.38); opacity: 0.5; }
+        35% { transform: scaleY(1); opacity: 0.95; }
+        65% { transform: scaleY(0.62); opacity: 0.7; }
+      }
+      @keyframes loading-pulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(0.76); opacity: 0.14; }
+        40% { transform: translate(-50%, -50%) scale(1); opacity: 0.28; }
+        75% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.08; }
+      }
+      @keyframes loading-wave {
+        0% {
+          transform: translate(-50%, -50%) scale(0.2);
+          opacity: 0.88;
+        }
+        55% {
+          opacity: 0.32;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(14.5);
+          opacity: 0;
+        }
+      }
+      @keyframes loading-shell-tint {
+        0%, 100% {
+          border-color: rgba(107, 182, 255, 0.16);
+          box-shadow: 0 24px 42px rgba(0, 0, 0, 0.2);
+        }
+        50% {
+          border-color: rgba(131, 230, 180, 0.18);
+          box-shadow: 0 26px 46px rgba(0, 0, 0, 0.22);
+        }
+      }
+      @keyframes loading-background-shift {
+        0%, 100% {
+          background-position: 50% 46%, 20% 20%, 82% 18%, 0% 0%;
+          filter: saturate(1) brightness(1);
+        }
+        35% {
+          background-position: 46% 42%, 26% 24%, 76% 16%, 0% 0%;
+          filter: saturate(1.04) brightness(1.02);
+        }
+        68% {
+          background-position: 54% 50%, 17% 26%, 86% 22%, 0% 0%;
+          filter: saturate(0.98) brightness(0.99);
+        }
+      }
+      @keyframes loading-link-tint {
+        0% {
+          background-position: 0% 50%;
+          filter: blur(0.3px) saturate(0.96);
+        }
+        100% {
+          background-position: 100% 50%;
+          filter: blur(0.3px) saturate(1.08);
+        }
+      }
+      @keyframes orbital-sway {
+        0%, 100% {
+          transform: translate(-4px, 2px) rotate(-2.2deg) scale(0.994);
+        }
+        28% {
+          transform: translate(3px, -3px) rotate(1.3deg) scale(1.006);
+        }
+        58% {
+          transform: translate(5px, 1px) rotate(-0.8deg) scale(1.01);
+        }
+        82% {
+          transform: translate(-2px, -2px) rotate(1.8deg) scale(1.003);
+        }
+      }
+      @keyframes source-anchor {
+        0%, 100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        35% {
+          transform: translate(-50%, calc(-50% - 2px)) scale(1.018);
+        }
+        68% {
+          transform: translate(-50%, calc(-50% + 1px)) scale(0.992);
+        }
+      }
+      @keyframes source-core-glow {
+        0%, 100% {
+          box-shadow: 0 0 0 16px rgba(107, 182, 255, 0.08), 0 0 42px rgba(131, 230, 180, 0.18);
+          filter: saturate(1) brightness(1);
+        }
+        42% {
+          box-shadow: 0 0 0 18px rgba(107, 182, 255, 0.1), 0 0 54px rgba(255, 184, 90, 0.24);
+          filter: saturate(1.04) brightness(1.02);
+        }
+        74% {
+          box-shadow: 0 0 0 15px rgba(107, 182, 255, 0.07), 0 0 36px rgba(131, 230, 180, 0.16);
+          filter: saturate(0.98) brightness(0.99);
+        }
+      }
+      @keyframes source-eye-look {
+        0%, 10% {
+          transform: translate(0, 0) scale(1);
+        }
+        18% {
+          transform: translate(2px, -1px) scale(1.1);
+        }
+        34% {
+          transform: translate(-2px, 1px) scale(1.04);
+        }
+        50% {
+          transform: translate(2px, 1px) scale(1.12);
+        }
+        68% {
+          transform: translate(-1px, -2px) scale(1.04);
+        }
+        84% {
+          transform: translate(1px, 0) scale(1.08);
+        }
+        100% {
+          transform: translate(0, 0) scale(1);
+        }
+      }
+      @keyframes source-mouth-react {
+        0%, 18%, 100% {
+          transform: rotate(7deg) scaleX(1) scaleY(1);
+          opacity: 0.9;
+        }
+        38% {
+          transform: rotate(9deg) scaleX(1.06) scaleY(1.08);
+          opacity: 0.96;
+        }
+        68% {
+          transform: rotate(8deg) scaleX(1.02) scaleY(1.04);
+          opacity: 0.93;
+        }
+      }
+      @keyframes song-glimmer {
+        0%, 100% {
+          box-shadow: 0 0 0 8px rgba(107, 182, 255, 0.07), 0 0 20px rgba(107, 182, 255, 0.2);
+          filter: saturate(0.98) brightness(0.98);
+        }
+        50% {
+          box-shadow: 0 0 0 9px rgba(107, 182, 255, 0.1), 0 0 26px rgba(107, 182, 255, 0.28);
+          filter: saturate(1.08) brightness(1.08);
+        }
+      }
+      @keyframes node-float {
+        0%, 100% {
+          transform: translate(0, 0) scale(1);
+        }
+        33% {
+          transform: translate(4px, -5px) scale(1.04);
+        }
+        66% {
+          transform: translate(-3px, 3px) scale(0.98);
+        }
+      }
+      @keyframes neighbor-glimmer {
+        0%, 100% {
+          box-shadow: 0 0 0 12px rgba(107, 182, 255, 0.12), 0 0 34px rgba(107, 182, 255, 0.34);
+          filter: saturate(1) brightness(1);
+        }
+        48% {
+          box-shadow: 0 0 0 13px rgba(107, 182, 255, 0.16), 0 0 42px rgba(107, 182, 255, 0.42);
+          filter: saturate(1.08) brightness(1.06);
+        }
+      }
+      @keyframes breakaway-glimmer {
+        0%, 100% {
+          box-shadow: 0 0 0 10px rgba(131, 230, 180, 0.08), 0 0 28px rgba(255, 210, 116, 0.18);
+          filter: saturate(1) brightness(1);
+        }
+        52% {
+          box-shadow: 0 0 0 12px rgba(131, 230, 180, 0.12), 0 0 38px rgba(255, 210, 116, 0.28);
+          filter: saturate(1.08) brightness(1.08);
+        }
+      }
+      @keyframes song-arrive {
+        0% { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      @keyframes cluster-a {
+        0% { transform: translate(-222px, -152px) scale(0.74); }
+        28% { transform: translate(-56px, -30px) scale(1.04); }
+        54% { transform: translate(-134px, 82px) scale(0.94); }
+        76% { transform: translate(-92px, 22px) scale(0.98); }
+        100% { transform: translate(-104px, -16px) scale(0.96); }
+      }
+      @keyframes cluster-b {
+        0% { transform: translate(232px, -144px) scale(0.72); }
+        32% { transform: translate(62px, -18px) scale(1.02); }
+        58% { transform: translate(154px, 86px) scale(0.92); }
+        80% { transform: translate(116px, 12px) scale(0.98); }
+        100% { transform: translate(128px, -24px) scale(0.95); }
+      }
+      @keyframes cluster-c {
+        0% { transform: translate(-206px, 172px) scale(0.72); }
+        30% { transform: translate(-42px, 38px) scale(1.01); }
+        56% { transform: translate(126px, 124px) scale(0.9); }
+        78% { transform: translate(44px, 82px) scale(0.98); }
+        100% { transform: translate(-24px, 112px) scale(0.95); }
+      }
+      @keyframes cluster-d {
+        0% { transform: translate(228px, 164px) scale(0.74); }
+        30% { transform: translate(42px, 34px) scale(1.02); }
+        58% { transform: translate(-132px, 118px) scale(0.9); }
+        80% { transform: translate(18px, 92px) scale(0.98); }
+        100% { transform: translate(112px, 106px) scale(0.95); }
+      }
+      @keyframes cluster-breakaway {
+        0% { transform: translate(148px, -24px) scale(0.7); opacity: 0.72; }
+        20% { transform: translate(58px, -10px) scale(0.96); opacity: 1; }
+        44% { transform: translate(214px, -96px) scale(1.05); opacity: 1; }
+        70% { transform: translate(278px, -152px) scale(0.92); opacity: 0.96; }
+        88% { transform: translate(198px, -114px) scale(0.94); opacity: 0.94; }
+        100% { transform: translate(154px, -92px) scale(0.9); opacity: 0.9; }
+      }
+      @keyframes link-a {
+        0% { width: 184px; opacity: 0.1; transform: translate(-6px, -1px) rotate(-156deg) scaleX(1); }
+        30% { width: 54px; opacity: 0.44; transform: translate(-6px, -1px) rotate(-149deg) scaleX(1); }
+        58% { width: 122px; opacity: 0.28; transform: translate(-6px, -1px) rotate(-145deg) scaleX(1); }
+        100% { width: 102px; opacity: 0.24; transform: translate(-6px, -1px) rotate(-148deg) scaleX(1); }
+      }
+      @keyframes link-b {
+        0% { width: 194px; opacity: 0.1; transform: translate(4px, 0) rotate(-32deg) scaleX(1); }
+        32% { width: 56px; opacity: 0.44; transform: translate(4px, 0) rotate(-24deg) scaleX(1); }
+        60% { width: 138px; opacity: 0.28; transform: translate(4px, 0) rotate(-20deg) scaleX(1); }
+        100% { width: 126px; opacity: 0.24; transform: translate(4px, 0) rotate(-24deg) scaleX(1); }
+      }
+      @keyframes link-c {
+        0% { width: 178px; opacity: 0.1; transform: translate(-6px, 2px) rotate(150deg) scaleX(1); }
+        30% { width: 44px; opacity: 0.42; transform: translate(-6px, 2px) rotate(142deg) scaleX(1); }
+        58% { width: 118px; opacity: 0.28; transform: translate(-6px, 2px) rotate(138deg) scaleX(1); }
+        100% { width: 106px; opacity: 0.24; transform: translate(-6px, 2px) rotate(141deg) scaleX(1); }
+      }
+      @keyframes link-d {
+        0% { width: 188px; opacity: 0.1; transform: translate(-4px, 1px) rotate(38deg) scaleX(1); }
+        32% { width: 42px; opacity: 0.42; transform: translate(-4px, 1px) rotate(30deg) scaleX(1); }
+        60% { width: 124px; opacity: 0.28; transform: translate(-4px, 1px) rotate(26deg) scaleX(1); }
+        100% { width: 112px; opacity: 0.24; transform: translate(-4px, 1px) rotate(30deg) scaleX(1); }
+      }
+      @keyframes link-breakaway {
+        0% { width: 74px; opacity: 0.1; transform: translate(10px, -3px) rotate(-10deg) scaleX(0.72); }
+        24% { width: 124px; opacity: 0.34; transform: translate(10px, -3px) rotate(-16deg) scaleX(1); }
+        52% { width: 244px; opacity: 0.46; transform: translate(10px, -3px) rotate(-24deg) scaleX(1); }
+        76% { width: 188px; opacity: 0.24; transform: translate(10px, -3px) rotate(-28deg) scaleX(1); }
+        100% { width: 154px; opacity: 0.2; transform: translate(10px, -3px) rotate(-22deg) scaleX(1); }
+      }
+      @keyframes song-settle {
+        0% {
+          transform: translate(calc(-50% + var(--x1)), calc(-50% + var(--y1))) scale(var(--s1, 0.72));
+          opacity: var(--o1, 0.18);
+        }
+        12% {
+          transform: translate(calc(-50% + var(--x1)), calc(-50% + var(--y1))) scale(calc(var(--s1, 0.72) * 0.88));
+          opacity: 0.32;
+        }
+        28% {
+          transform: translate(calc(-50% + var(--x2)), calc(-50% + var(--y2))) scale(calc(var(--s2, 1) * 1.04));
+          opacity: 0.54;
+        }
+        46% {
+          transform: translate(calc(-50% + var(--x2)), calc(-50% + var(--y2))) scale(var(--s2, 1));
+          opacity: var(--o2, 1);
+        }
+        63% {
+          transform: translate(calc(-50% + var(--x3)), calc(-50% + var(--y3))) scale(var(--s3, 0.86));
+          opacity: var(--o3, 0.88);
+        }
+        81% {
+          transform: translate(calc(-50% + var(--x2)), calc(-50% + var(--y2))) scale(calc(var(--s2, 1) * 0.99));
+          opacity: 0.9;
+        }
+        100% {
+          transform: translate(calc(-50% + var(--x2)), calc(-50% + var(--y2))) scale(calc(var(--s2, 1) * 0.94));
+          opacity: 0.88;
+        }
+      }
+      @keyframes song-idle {
+        0%, 100% {
+          transform: translate(calc(-50% + var(--x2)), calc(-50% + var(--y2))) scale(calc(var(--s2, 1) * 0.95));
+        }
+        50% {
+          transform: translate(calc(-50% + var(--x2) + var(--idle-x, 8px)), calc(-50% + var(--y2) + var(--idle-y, -6px))) scale(calc(var(--s2, 1) * 1.01));
+        }
+      }
+      .recommendation-loading-kicker {
+        color: rgba(131, 230, 180, 0.86);
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .recommendation-loading-title {
+        color: #eef4fb;
+        font-size: 1.12rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+      .recommendation-loading-detail {
+        color: rgba(171, 187, 204, 0.88);
+        font-size: 0.92rem;
+        line-height: 1.6;
+        min-height: 1.6em;
+        transition: opacity 180ms ease, transform 180ms ease;
+      }
+      .recommendation-loading-steps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 2px;
+      }
+      .recommendation-loading-step {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(231, 238, 247, 0.08);
+        background: rgba(10, 16, 24, 0.54);
+        color: rgba(210, 221, 234, 0.84);
+        font-size: 0.76rem;
+      }
+      .recommendation-loading-step::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(131, 230, 180, 0.95), rgba(107, 182, 255, 0.95));
+        box-shadow: 0 0 0 4px rgba(107, 182, 255, 0.08);
       }
       .loading-card.search-loading-card {
         padding: 14px 16px;
@@ -1904,8 +2672,8 @@
         <div class="hero-badge">Discover by sound</div>
         <a class="hero-toplink" href="https://github.com/mitchhi/dl-song-recommender" target="_blank" rel="noreferrer">GitHub</a>
       </div>
-      <a class="hero-brand" href="/" aria-label="Echoform home">
-        <h1 class="hero-title">Echo<span>form</span></h1>
+      <a class="hero-brand" href="/" aria-label="Songhalo home">
+        <h1 class="hero-title">Song<span>halo</span></h1>
         <div class="hero-mark" aria-hidden="true">
           <span class="hero-node hero-node-source"></span>
           <span class="hero-node hero-node-a"></span>
@@ -1921,7 +2689,7 @@
           <p class="hero-detail">
             Built from spectrograms, stem separation, and learned sonic similarity.
           </p>
-          <ul class="hero-notes" aria-label="How Echoform works">
+          <ul class="hero-notes" aria-label="How Songhalo works">
             <li class="hero-note">Start with a song</li>
             <li class="hero-note">Upload a clip</li>
             <li class="hero-note">Explore the sonic map</li>
@@ -2058,6 +2826,22 @@
       let currentUploadObjectUrl = "";
       let currentUploadDuration = 0;
       let uploadClipStopTimer = null;
+      let recommendationLoadingTimer = null;
+      let recommendationLoadingMessageIndex = 0;
+      const recommendationLoadingMessages = {
+        song: [
+          "Almost there. Mapping the nearest sonic neighbors now.",
+          "Tracing the shape and texture of your selected track.",
+          "Listening for the closest match in the current space.",
+          "Pulling nearby songs into view."
+        ],
+        upload: [
+          "Almost there. Pulling your clip into the same sonic world.",
+          "Separating stems and building a fresh query from your audio.",
+          "Reading the texture, energy, and structure of the clip.",
+          "Matching your upload to its nearest neighbors."
+        ]
+      };
 
       async function getJson(url) {
         const response = await fetch(url);
@@ -2086,6 +2870,214 @@
           body: formData,
         });
         return parseJsonResponse(response);
+      }
+
+      function stopRecommendationLoadingMessages() {
+        if (recommendationLoadingTimer) {
+          window.clearInterval(recommendationLoadingTimer);
+          recommendationLoadingTimer = null;
+        }
+      }
+
+      async function waitForLoaderPaint() {
+        await new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+        await new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+      }
+
+      function startRecommendationLoadingMessages(kind = "song") {
+        stopRecommendationLoadingMessages();
+        const messages = recommendationLoadingMessages[kind] || recommendationLoadingMessages.song;
+        recommendationLoadingMessageIndex = 0;
+        const detail = document.getElementById("recommendation-loading-detail");
+        if (!detail) return;
+        detail.textContent = messages[0];
+        if (messages.length < 2) return;
+        recommendationLoadingTimer = window.setInterval(() => {
+          const node = document.getElementById("recommendation-loading-detail");
+          if (!node) {
+            stopRecommendationLoadingMessages();
+            return;
+          }
+          recommendationLoadingMessageIndex = (recommendationLoadingMessageIndex + 1) % messages.length;
+          node.style.opacity = "0.35";
+          node.style.transform = "translateY(2px)";
+          window.setTimeout(() => {
+            if (!document.getElementById("recommendation-loading-detail")) return;
+            node.textContent = messages[recommendationLoadingMessageIndex];
+            node.style.opacity = "1";
+            node.style.transform = "translateY(0)";
+          }, 120);
+        }, 1900);
+      }
+
+      function attachRecommendationLoaderInteractions() {
+        const visual = document.querySelector(".recommendation-loading-visual");
+        if (!visual) return;
+        const orbit = visual.querySelector(".recommendation-loading-orbit");
+        const sourceShell = visual.querySelector(".source-shell");
+        const interactiveNodes = [];
+        let idleIndex = 0;
+
+        for (const node of visual.querySelectorAll(".recommendation-loading-node")) {
+          if (node.classList.contains("source")) continue;
+          interactiveNodes.push(node);
+          let activePointerId = null;
+          let dragStartX = 0;
+          let dragStartY = 0;
+          let offsetX = 0;
+          let offsetY = 0;
+          let velocityX = 0;
+          let velocityY = 0;
+          let lastClientX = 0;
+          let lastClientY = 0;
+          let lastTime = 0;
+          let throwFrame = 0;
+
+          const shell = node.parentElement;
+          if (!shell) continue;
+          if (shell.classList.contains("song-shell")) {
+            const angle = (idleIndex * 137.5 * Math.PI) / 180;
+            const radius = 5 + (idleIndex % 5) * 1.8;
+            shell.style.setProperty("--idle-x", `${Math.round(Math.cos(angle) * radius)}px`);
+            shell.style.setProperty("--idle-y", `${Math.round(Math.sin(angle) * radius)}px`);
+            idleIndex += 1;
+          }
+
+          const cancelThrow = () => {
+            if (throwFrame) {
+              window.cancelAnimationFrame(throwFrame);
+              throwFrame = 0;
+            }
+          };
+
+          const applyOffset = () => {
+            node.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+          };
+
+          const resetNode = () => {
+            cancelThrow();
+            offsetX = 0;
+            offsetY = 0;
+            velocityX = 0;
+            velocityY = 0;
+            node.classList.remove("dragging");
+            node.style.transition = "transform 480ms cubic-bezier(0.22, 1, 0.36, 1)";
+            applyOffset();
+            window.setTimeout(() => {
+              if (!node.isConnected) return;
+              node.style.transition = "";
+            }, 520);
+            shell.style.animationPlayState = "";
+          };
+
+          const throwNode = () => {
+            cancelThrow();
+            shell.style.animationPlayState = "paused";
+            let previousTime = performance.now();
+            const step = (now) => {
+              if (!node.isConnected) return;
+              const delta = Math.min((now - previousTime) / 16.6667, 2.2);
+              previousTime = now;
+              offsetX += velocityX * delta;
+              offsetY += velocityY * delta;
+              velocityX *= 0.94;
+              velocityY *= 0.94;
+              applyOffset();
+              if (Math.abs(velocityX) + Math.abs(velocityY) < 0.45 || Math.abs(offsetX) + Math.abs(offsetY) > 280) {
+                resetNode();
+                return;
+              }
+              throwFrame = window.requestAnimationFrame(step);
+            };
+            throwFrame = window.requestAnimationFrame(step);
+          };
+
+          node.addEventListener("pointerdown", (event) => {
+            cancelThrow();
+            activePointerId = event.pointerId;
+            dragStartX = event.clientX - offsetX;
+            dragStartY = event.clientY - offsetY;
+            lastClientX = event.clientX;
+            lastClientY = event.clientY;
+            lastTime = performance.now();
+            velocityX = 0;
+            velocityY = 0;
+            node.classList.add("dragging");
+            node.style.transition = "none";
+            shell.style.animationPlayState = "paused";
+            node.setPointerCapture(event.pointerId);
+            event.preventDefault();
+          });
+
+          node.addEventListener("pointermove", (event) => {
+            if (activePointerId !== event.pointerId) return;
+            const now = performance.now();
+            const elapsed = Math.max(now - lastTime, 1);
+            offsetX = event.clientX - dragStartX;
+            offsetY = event.clientY - dragStartY;
+            velocityX = ((event.clientX - lastClientX) / elapsed) * 12;
+            velocityY = ((event.clientY - lastClientY) / elapsed) * 12;
+            lastClientX = event.clientX;
+            lastClientY = event.clientY;
+            lastTime = now;
+            applyOffset();
+          });
+
+          const release = (event) => {
+            if (activePointerId !== event.pointerId) return;
+            activePointerId = null;
+            node.classList.remove("dragging");
+            if (node.hasPointerCapture(event.pointerId)) {
+              node.releasePointerCapture(event.pointerId);
+            }
+            throwNode();
+          };
+
+          node.addEventListener("pointerup", release);
+          node.addEventListener("pointercancel", release);
+        }
+
+        if (!orbit || !sourceShell) return;
+        let pulseResetTimer = 0;
+        let waveResetTimer = 0;
+
+        sourceShell.addEventListener("click", () => {
+          orbit.classList.remove("pulsing");
+          void orbit.offsetWidth;
+          orbit.classList.add("pulsing");
+          window.clearTimeout(waveResetTimer);
+          waveResetTimer = window.setTimeout(() => {
+            orbit.classList.remove("pulsing");
+          }, 2200);
+
+          window.clearTimeout(pulseResetTimer);
+          for (const node of interactiveNodes) {
+            if (node.classList.contains("dragging")) continue;
+            const shell = node.parentElement;
+            if (!shell) continue;
+            const shellRect = shell.getBoundingClientRect();
+            const orbitRect = orbit.getBoundingClientRect();
+            const dx = (shellRect.left + shellRect.width / 2) - (orbitRect.left + orbitRect.width / 2);
+            const dy = (shellRect.top + shellRect.height / 2) - (orbitRect.top + orbitRect.height / 2);
+            const distance = Math.max(Math.hypot(dx, dy), 1);
+            const outward = distance < 110 ? -22 : distance < 185 ? 18 : -10;
+            const xKick = (dx / distance) * outward;
+            const yKick = (dy / distance) * outward;
+            node.classList.add("reacting");
+            node.style.transform = `translate(${xKick}px, ${yKick}px) scale(${distance < 110 ? 1.08 : 1.03})`;
+          }
+
+          pulseResetTimer = window.setTimeout(() => {
+            for (const node of interactiveNodes) {
+              if (!node.isConnected || node.classList.contains("dragging")) continue;
+              node.style.transform = "";
+              window.setTimeout(() => {
+                if (!node.isConnected) return;
+                node.classList.remove("reacting");
+              }, 720);
+            }
+          }, 760);
+        });
       }
 
       function escapeHtml(value) {
@@ -2429,7 +3421,9 @@
         }
         uploadStatus.textContent = "Uploading clip and building stem-aware recommendation query...";
         uploadSubmitButton.disabled = true;
-        renderRecommendationsLoadingState();
+        renderRecommendationsLoadingState("upload");
+        recommendationsRoot.getBoundingClientRect();
+        await waitForLoaderPaint();
         try {
           const formData = new FormData();
           formData.append("file", file);
@@ -2450,6 +3444,7 @@
           }
           uploadStatus.textContent = "Recommendations updated from the uploaded clip.";
         } catch (error) {
+          stopRecommendationLoadingMessages();
           recommendationsRoot.textContent = error.message;
           uploadStatus.textContent = error.message;
         } finally {
@@ -2871,42 +3866,158 @@
         `).join("");
       }
 
-      function renderRecommendationsLoadingState() {
+      function renderRecommendationsLoadingState(kind = "song") {
+        const isUpload = kind === "upload";
         recommendationsRoot.innerHTML = `
-          <div class="toolbar motion-enter-soft" style="--stagger:0;">
-            <div class="muted">Loading neighborhood and recommendations...</div>
-            <div></div>
-          </div>
-          <div class="loading-card recommendation-loading-card motion-enter" style="--stagger:1;">
-            <div class="loading-row">
-              <span class="loading-line kicker"></span>
-              <span class="loading-line meta"></span>
+          <div class="recommendation-loading-shell">
+            <div class="recommendation-loading-copy">
+              <div class="recommendation-loading-visual" aria-hidden="true">
+                <div class="recommendation-loading-orbit">
+                  <span class="recommendation-loading-wave wave-a"></span>
+                  <span class="recommendation-loading-wave wave-b"></span>
+                  <span class="recommendation-loading-wave wave-c"></span>
+                  <span class="recommendation-loading-link link-a"></span>
+                  <span class="recommendation-loading-link link-b"></span>
+                  <span class="recommendation-loading-link link-c"></span>
+                  <span class="recommendation-loading-link link-d"></span>
+                  <span class="recommendation-loading-link link-breakaway"></span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-250px; --y1:-152px; --x2:-132px; --y2:-74px; --x3:-212px; --y3:42px; --duration:6.2s; --delay:0.04s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-186px; --y1:-184px; --x2:-68px; --y2:-94px; --x3:88px; --y3:-126px; --duration:7s; --delay:0.09s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-98px; --y1:-206px; --x2:-18px; --y2:-112px; --x3:126px; --y3:-148px; --duration:5.8s; --delay:0.14s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:18px; --y1:-198px; --x2:44px; --y2:-96px; --x3:178px; --y3:-132px; --duration:6.4s; --delay:0.19s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:146px; --y1:-182px; --x2:86px; --y2:-84px; --x3:228px; --y3:-24px; --duration:6.8s; --delay:0.24s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:238px; --y1:-118px; --x2:118px; --y2:-42px; --x3:252px; --y3:54px; --duration:7.2s; --delay:0.29s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:272px; --y1:8px; --x2:124px; --y2:18px; --x3:206px; --y3:126px; --duration:6.6s; --delay:0.34s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:228px; --y1:138px; --x2:96px; --y2:76px; --x3:84px; --y3:184px; --duration:5.6s; --delay:0.39s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:118px; --y1:194px; --x2:38px; --y2:96px; --x3:-104px; --y3:176px; --duration:7.4s; --delay:0.44s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-26px; --y1:212px; --x2:-22px; --y2:108px; --x3:-176px; --y3:142px; --duration:6.1s; --delay:0.49s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-168px; --y1:178px; --x2:-78px; --y2:84px; --x3:-248px; --y3:86px; --duration:6.9s; --delay:0.54s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-262px; --y1:72px; --x2:-114px; --y2:28px; --x3:-236px; --y3:-48px; --duration:5.9s; --delay:0.59s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-278px; --y1:-48px; --x2:-124px; --y2:-12px; --x3:-206px; --y3:-136px; --duration:7.1s; --delay:0.64s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-212px; --y1:-8px; --x2:-84px; --y2:-4px; --x3:-176px; --y3:112px; --duration:6.3s; --delay:0.69s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-302px; --y1:-128px; --x2:-156px; --y2:-78px; --x3:-238px; --y3:18px; --duration:6.7s; --delay:0.74s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-282px; --y1:124px; --x2:-146px; --y2:66px; --x3:-212px; --y3:184px; --duration:6.5s; --delay:0.79s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-142px; --y1:246px; --x2:-58px; --y2:126px; --x3:42px; --y3:214px; --duration:7.3s; --delay:0.84s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:42px; --y1:252px; --x2:14px; --y2:128px; --x3:164px; --y3:188px; --duration:6.2s; --delay:0.89s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:214px; --y1:208px; --x2:92px; --y2:92px; --x3:262px; --y3:94px; --duration:6.8s; --delay:0.94s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:304px; --y1:88px; --x2:148px; --y2:26px; --x3:274px; --y3:-34px; --duration:7.1s; --delay:0.99s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:286px; --y1:-94px; --x2:142px; --y2:-34px; --x3:204px; --y3:-162px; --duration:6.4s; --delay:1.04s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:122px; --y1:-248px; --x2:54px; --y2:-116px; --x3:-48px; --y3:-202px; --duration:7.2s; --delay:1.09s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-42px; --y1:-262px; --x2:-12px; --y2:-122px; --x3:-152px; --y3:-188px; --duration:6.6s; --delay:1.14s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-214px; --y1:-234px; --x2:-96px; --y2:-104px; --x3:-268px; --y3:-82px; --duration:7.4s; --delay:1.19s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-322px; --y1:-6px; --x2:-156px; --y2:8px; --x3:-282px; --y3:102px; --duration:6.1s; --delay:1.24s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:-104px; --y1:8px; --x2:-34px; --y2:4px; --x3:84px; --y3:-34px; --duration:5.7s; --delay:1.29s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:84px; --y1:18px; --x2:28px; --y2:6px; --x3:156px; --y3:58px; --duration:6.9s; --delay:1.34s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell song-shell" style="--x1:8px; --y1:146px; --x2:12px; --y2:74px; --x3:-42px; --y3:232px; --duration:5.8s; --delay:1.39s;">
+                    <span class="recommendation-loading-node song"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell source-shell">
+                    <span class="recommendation-loading-node source">
+                      <span class="recommendation-loading-face">
+                        <span class="recommendation-loading-brow left"></span>
+                        <span class="recommendation-loading-brow right"></span>
+                        <span class="recommendation-loading-eye left"></span>
+                        <span class="recommendation-loading-eye right"></span>
+                        <span class="recommendation-loading-mouth"></span>
+                      </span>
+                    </span>
+                  </span>
+                  <span class="recommendation-loading-node-shell neighbor-a-shell">
+                    <span class="recommendation-loading-node neighbor-a"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell neighbor-b-shell">
+                    <span class="recommendation-loading-node neighbor-b"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell neighbor-c-shell">
+                    <span class="recommendation-loading-node neighbor-c"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell neighbor-d-shell">
+                    <span class="recommendation-loading-node neighbor-d"></span>
+                  </span>
+                  <span class="recommendation-loading-node-shell breakaway-shell">
+                    <span class="recommendation-loading-node breakaway"></span>
+                  </span>
+                </div>
+                <div class="recommendation-loading-spectrum">
+                  <span class="recommendation-loading-bar" style="height:12px;"></span>
+                  <span class="recommendation-loading-bar" style="height:24px;"></span>
+                  <span class="recommendation-loading-bar" style="height:17px;"></span>
+                  <span class="recommendation-loading-bar" style="height:48px;"></span>
+                  <span class="recommendation-loading-bar" style="height:34px;"></span>
+                  <span class="recommendation-loading-bar" style="height:24px;"></span>
+                </div>
+              </div>
+              <div class="toolbar">
+                <div class="muted">${isUpload ? "Building recommendations from your uploaded clip..." : "Loading neighborhood and recommendations..."}</div>
+                <div></div>
+              </div>
+              <div class="recommendation-loading-kicker">${isUpload ? "Uploaded Clip" : "Song Discovery"}</div>
+              <div class="recommendation-loading-title">${isUpload ? "Turning your clip into a query" : "Finding the nearest songs"}</div>
+              <div id="recommendation-loading-detail" class="recommendation-loading-detail">${isUpload ? "Almost there. Pulling your clip into the same sonic world." : "Almost there. Mapping the nearest sonic neighbors now."}</div>
+              <div class="recommendation-loading-steps">
+                <span class="recommendation-loading-step">${isUpload ? "Decode clip" : "Read query"}</span>
+                <span class="recommendation-loading-step">${isUpload ? "Separate stems" : "Score neighbors"}</span>
+                <span class="recommendation-loading-step">${isUpload ? "Match songs" : "Assemble stack"}</span>
+              </div>
             </div>
-            <div class="loading-line title"></div>
-            <div class="loading-line subtitle"></div>
-            <div class="loading-line embed"></div>
           </div>
-          ${Array.from({ length: 4 }, (_, index) => `
-            <div class="loading-card recommendation-loading-card motion-enter" style="--stagger:${index + 2};">
-              <div class="loading-row">
-                <span class="loading-line kicker"></span>
-                <span class="loading-line meta"></span>
-              </div>
-              <div class="loading-line title"></div>
-              <div class="loading-line subtitle"></div>
-              <div class="loading-pills">
-                <span class="loading-line pill"></span>
-                <span class="loading-line pill"></span>
-                <span class="loading-line pill"></span>
-              </div>
-              <div class="loading-actions">
-                <span class="loading-line action"></span>
-                <span class="loading-line action"></span>
-              </div>
-              <div class="loading-line embed"></div>
-            </div>
-          `).join("")}
         `;
+        startRecommendationLoadingMessages(kind);
+        attachRecommendationLoaderInteractions();
       }
 
       function renderResults(results) {
@@ -2950,6 +4061,7 @@
       }
 
       async function renderRecommendations(payload) {
+        stopRecommendationLoadingMessages();
         currentRecommendationsPayload = payload;
         const isUploadedQuery = Boolean(payload.query && payload.query.uploaded);
         const artistProfile = isUploadedQuery ? "" : await renderArtistProfile(payload.query);
@@ -3256,7 +4368,9 @@
       });
 
       async function loadRecommendations(spotifyId) {
-        renderRecommendationsLoadingState();
+        renderRecommendationsLoadingState("song");
+        recommendationsRoot.getBoundingClientRect();
+        await waitForLoaderPaint();
         try {
           if (spotifyId !== currentQueryId) {
             currentRecommendationsLimit = 7;
@@ -3277,6 +4391,7 @@
           await loadNeighborhood(spotifyId);
           await renderRecommendations(payload);
         } catch (error) {
+          stopRecommendationLoadingMessages();
           currentQueryId = null;
           currentDistance = null;
           currentNeighborhood = null;
